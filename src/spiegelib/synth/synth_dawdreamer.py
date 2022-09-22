@@ -47,11 +47,12 @@ class SynthDawDreamer(SynthBase):
         self.generator = self.engine.make_plugin_processor("Synth", plugin_path)
 
         #Initialize parameters
-        self.parameters = parse_parameters(self.generator.get_parameters_description())
+        self.parametersDesc = self.generator.get_parameters_description()
+        self.parameters = parse_parameters(self.parametersDesc)
 
         #Initialize patch
         self.patch = [None] * len(self.parameters)
-        self.set_curr_patch()
+        self.get_curr_patch()
 
         #Override params if available
         for i in range(len(self.overridden_params)):
@@ -72,7 +73,7 @@ class SynthDawDreamer(SynthBase):
 
     def load_patch(self):
         """
-        Update patch parameter. Overridden parameters will not be effected.
+        Update patch parameter in generator. Overridden parameters will not be effected.
         """
 
         # Check for parameters to include in patch update
@@ -83,9 +84,8 @@ class SynthDawDreamer(SynthBase):
                     'parameter number and be in range 0-1. '
                     'Received %s' % param
                 )
-
-        # Patch VST with parameters
-        self.generator.set_patch(self.patch)
+            else:
+                self.generator.set_parameter(param[0], param[1])
 
 
     def is_valid_parameter_setting(self, parameter):
@@ -143,24 +143,31 @@ class SynthDawDreamer(SynthBase):
         """
         Randomize the current patch. Overridden parameteres will be unaffected.
         """
+        technique = "uniform"
 
         if self.loaded_plugin:
-            random_patch = self.generator.get_random_patch()
-            self.set_patch(random_patch)
+            random_patch = []
+            #First type
+            if technique == "uniform":
+                for key, value in self.patch:
+                    #If we can automate this parameter:
+                    if self.parametersDesc[key]["isAutomatable"] and not self.parametersDesc[key]["isDiscrete"]:
+                        random_patch.append((key, np.random.uniform(0,1)))
+                    if self.parametersDesc[key]["isDiscrete"]:
+                        print(self.parametersDesc[key])
 
+            self.set_patch(random_patch)
         else:
             print("Please load plugin first.")
 
-    def set_curr_patch(self):
+    def get_curr_patch(self):
         """
         Obtains the current configuration of parameters (patch)
-        Sets self.patch to a updatedlist with tuples where [0] is the index i
+        Sets self.patch to an updatedlist with tuples where [0] is the index i
         and [1] value of parameter i
         """
-        for i, (key, value) in enumerate(self.parameters.items()):
-
-            print(self.generator.get_parameter(key))
-            self.patch[i] = (key, self.generator.get_parameter(key))
+        for i in range(len(self.patch)):
+            self.patch[i] = (i, self.generator.get_parameter(i))
 
 
 
@@ -183,6 +190,5 @@ def parse_parameters(param_list):
         param_index = d['index']
         param_dict[param_index] = d['name']
     return param_dict
-
 
 
