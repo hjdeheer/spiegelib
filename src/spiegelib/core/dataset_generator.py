@@ -70,7 +70,7 @@ class DatasetGenerator():
         audio_folder_name (str): folder name for the audio output if used. Will be automatically
             created within the output folder if saving audio. Defaults to audio
     """
-
+    #TODO Add sampling technique param to constructor
     def __init__(self, synth, features, output_folder=os.getcwd(), save_audio=False, scale=False):
         """
         Contructor
@@ -126,6 +126,7 @@ class DatasetGenerator():
         """
 
         # Get a single example to determine required array size required
+        #TODO Based on sampling technique give correct param to get random sample
         audio = self.synth.get_random_example()
         features = self.features(audio)
         patch = self.synth.get_patch()

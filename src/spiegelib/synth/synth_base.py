@@ -152,6 +152,8 @@ class SynthBase(ABC):
         """
 
 
+
+    #TODO Add random sampling arguments here to the synth
     def get_random_example(self):
         """
         Returns audio from a new random patch
