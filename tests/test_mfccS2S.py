@@ -10,6 +10,9 @@ import numpy as np
 from spiegelib import AudioBuffer
 from spiegelib.features import MFCCS2S
 
+import torch
+import torchaudio
+
 import utils
 
 class TestMFCCS2S():
@@ -80,3 +83,56 @@ class TestMFCCS2S():
         assert scaled.std() == pytest.approx(1.)
         np.testing.assert_array_almost_equal(scaled.mean((0,1)), np.zeros(13))
         np.testing.assert_array_almost_equal(scaled.std((0,1)), np.ones(13))
+
+
+    def test_librosa_equal_to_torch(self):
+
+        sample_rate = 44100
+        n_mfcc = 13
+        n_fft = 2048
+        win_length = None
+        hop_length = 512
+        center =True
+        pad_mode ="reflect"
+        power = 2.0
+        norm ='slaney'
+        onesided = True
+        n_mels = 128
+
+        sine = utils.make_test_sine(2048, 440, sample_rate)
+        audio = AudioBuffer(sine, sample_rate)
+
+        mel = MFCCS2S(
+            num_mfccs=n_mfcc,
+            sample_rate=sample_rate,
+            frame_size=n_fft,
+            window_length=win_length,
+            hop_size=hop_length,
+            center=True,
+            pad_mode="reflect",
+            power=2.0,
+            n_mels=n_mels,
+            htk=True)
+
+        librosa_mel = mel(audio)
+
+        torch_mel = torchaudio.transforms.MFCC(
+            sample_rate=sample_rate,
+            n_mfcc=n_mfcc,
+            melkwargs={
+                "n_fft"      : n_fft,
+                "win_length" : win_length,
+                "hop_length" : hop_length,
+                "power"      : power,
+                "center"     : center,
+                "pad_mode"   : pad_mode,
+                "norm"       : norm,
+                "onesided"   : onesided,
+                "n_mels"     : n_mels,
+                "mel_scale"  : "htk"
+        }
+        )(torch.Tensor(sine))
+
+        mse = ((torch_mel - librosa_mel) ** 2).mean()
+        error = 0.000001
+        assert mse < error

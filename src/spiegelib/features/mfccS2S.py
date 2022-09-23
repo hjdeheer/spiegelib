@@ -13,6 +13,7 @@ class MFCCS2S(FeaturesBase):
     """
     Args:
         num_mfccs (int, optional): Number of MFCCs to return, defaults to 20
+        window_length (int or None, optional): The size of the window
         frame_size (int, optional): Size of FFT to use when calculating MFCCs, defaults to 2048
         hop_size (int, optiona): hop length in samples, defaults to 512
         scale_axis (int, tuple, None): When applying scaling, determines which dimensions
@@ -28,13 +29,13 @@ class MFCCS2S(FeaturesBase):
 
     def __init__(self, 
                  num_mfccs=13, 
-                 frame_size=2048, 
+                 frame_size=2048,
+                 window_length=None, 
                  hop_size=512, 
                  scale_axis=0,
                  power=2.0,
                  center=True,
                  pad_mode="reflect",
-                #  one_sided=True,
                  n_mels=128,
                  htk=True,
                  **kwargs):
@@ -43,12 +44,12 @@ class MFCCS2S(FeaturesBase):
         """
 
         self.num_mfccs = num_mfccs
+        self.window_length=window_length
         self.frame_size = frame_size
         self.hop_size = hop_size
         self.power = power
         self.center = center
         self.pad_mode = pad_mode
-        # self.one_sided = one_sided
         self.n_mels = n_mels
         self.htk = htk
         super().__init__(scale_axis=scale_axis, **kwargs)
@@ -81,6 +82,7 @@ class MFCCS2S(FeaturesBase):
             y=audio.get_audio(),
             sr=self.sample_rate,
             n_fft=self.frame_size,
+            win_length=self.window_length,
             hop_length=self.hop_size,
             n_mfcc=self.num_mfccs,
             power=self.power,
