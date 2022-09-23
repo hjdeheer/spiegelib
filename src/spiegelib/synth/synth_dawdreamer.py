@@ -150,10 +150,14 @@ class SynthDawDreamer(SynthBase):
             #First type
             if technique == "uniform":
                 for key, value in self.patch:
+                    #If cutoff or output param -> turn volume to 1
+                    #TODO Determine what to do with volume params
+                    if key == 0 or key == 2:
+                        random_patch.append((key, 1))
                     #If we can automate this parameter:
-                    if self.parametersDesc[key]["isAutomatable"] and not self.parametersDesc[key]["isDiscrete"]:
+                    elif self.parametersDesc[key]["isAutomatable"] and not self.parametersDesc[key]["isDiscrete"]:
                         random_patch.append((key, np.random.uniform(0,1)))
-                    if self.parametersDesc[key]["isDiscrete"]:
+                    elif self.parametersDesc[key]["isDiscrete"]:
                         print(self.parametersDesc[key])
 
             self.set_patch(random_patch)
