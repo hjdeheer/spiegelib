@@ -10,6 +10,7 @@ from .features_base import FeaturesBase
 from .fft import FFT
 from .mfcc import MFCC
 from .mfccS2S import MFCCS2S
+from .spectrogram import Spectrogram
 from .mel_spectrogram import MelSpectrogram
 from .spectral_summarized import SpectralSummarized
 from .stft import STFT
