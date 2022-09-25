@@ -50,14 +50,15 @@ class SynthDawDreamer(SynthBase):
         self.parametersDesc = self.generator.get_parameters_description()
         self.parameters = parse_parameters(self.parametersDesc)
 
-        #Initialize patch
-        self.patch = [None] * len(self.parameters)
-        self.get_curr_patch()
 
         #Override params if available
         for i in range(len(self.overridden_params)):
             index, value = self.overridden_params[i]
             self.generator.set_parameter(int(index), value)
+
+        #Initialize patch
+        self.patch = [None] * len(self.parameters)
+        self.get_curr_patch()
 
         #Set first midi note
         self.generator.add_midi_note(self.midi_note, self.midi_velocity, 0, self.note_length_secs)
@@ -151,12 +152,8 @@ class SynthDawDreamer(SynthBase):
             #First type
             if technique == "uniform":
                 for key, value in self.patch:
-                    #If cutoff or output param -> turn volume to 1
-                    #TODO Determine what to do with volume params
-                    if key == 0 or key == 2:
-                        random_patch.append((key, 1))
                     #If we can automate this parameter:
-                    elif self.parametersDesc[key]["isAutomatable"] and not self.parametersDesc[key]["isDiscrete"]:
+                    if self.parametersDesc[key]["isAutomatable"] and not self.parametersDesc[key]["isDiscrete"]:
                         random_patch.append((key, np.random.uniform(0, 1)))
                     elif self.parametersDesc[key]["isDiscrete"]:
                         print(f"Parameter{self.parametersDesc[key]} is discrete.")
@@ -184,8 +181,8 @@ def parse_parameters(param_list):
     Parse parameter list return by dawdreamer into a dictionary keyed on parameter
     index with values being the name / short descriptions for the parameter at that index.
 
-    :param param_str: A parameter description list returned by dawdreamer
-    :type param_str: str
+    :param param_list: A parameter description list returned by dawdreamer
+    :type param_list: str
     :returns: A dictionary with parameter index as keys and parameter name / description for values
     :rtype: dict
     """
