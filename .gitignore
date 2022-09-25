@@ -10,7 +10,7 @@ __pycache__/
 data/
 !tests/data
 src/test.py
-
+audio/
 
 # due to using tox and pytest
 .tox

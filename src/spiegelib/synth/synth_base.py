@@ -144,23 +144,30 @@ class SynthBase(ABC):
 
 
     @abstractmethod
-    def randomize_patch(self):
+    def randomize_patch(self, technique):
         """
         This method must be overridden and should have the effect
         of randomizing parameters of the synthesizer. Overridden methods should be
-        uneffected by this randomization
+        uneffected by this randomization.
+        Args:
+            technique: Defines the sampling technique used for data generation
+                of the parameter space.
         """
 
 
-    def get_random_example(self):
+
+    #TODO Add random sampling arguments here to the synth
+    def get_random_example(self, technique):
         """
         Returns audio from a new random patch
-
+        Args:
+            technique (str, optional): Defines the sampling technique used for data generation
+                of the parameter space.
         :return: An audio buffer
         :rtype: np.array
         """
 
-        self.randomize_patch()
+        self.randomize_patch(technique)
         self.render_patch()
         return self.get_audio()
 
