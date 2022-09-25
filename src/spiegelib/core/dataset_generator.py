@@ -106,7 +106,7 @@ class DatasetGenerator():
         self.should_scale = scale
 
 
-    def generate(self, size, file_prefix="", fit_scaler_only=False):
+    def generate(self, size, technique='uniform', file_prefix="", fit_scaler_only=False):
         """
         Generate dataset with a set of random patches. Saves the extracted features
         and parameter settings in separate .npy files. Files are stored in the output
@@ -119,15 +119,18 @@ class DatasetGenerator():
 
         Args:
             size (int): Number of different synthesizer patches to render.
+            technique (str, optional): Defines the sampling technique used for data generation
+                of the parameter space.
             file_prefix (str, optional): filename prefix for all output data.
             fit_scaler_only (bool, optional): If this is set to True, then
                 no data will be saved and only scaler will be set or reset
                 for the feature object.
+
         """
 
         # Get a single example to determine required array size required
         #TODO Based on sampling technique give correct param to get random sample
-        audio = self.synth.get_random_example()
+        audio = self.synth.get_random_example(technique)
         features = self.features(audio)
         patch = self.synth.get_patch()
 
@@ -142,7 +145,7 @@ class DatasetGenerator():
 
         # Generate data
         for i in trange(size, desc="Generating Dataset"):
-            audio = self.synth.get_random_example()
+            audio = self.synth.get_random_example(technique)
             feature_set[i] = self.features(audio, scale=should_scale)
             patch_set[i] = [p[1] for p in self.synth.get_patch()]
 

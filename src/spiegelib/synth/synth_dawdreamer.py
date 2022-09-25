@@ -127,7 +127,7 @@ class SynthDawDreamer(SynthBase):
         """
 
         if self.rendered_patch:
-            audio = self.engine.get_audio()
+            audio = AudioBuffer(self.engine.get_audio(), self.sample_rate)
             return audio
 
         else:
@@ -139,12 +139,13 @@ class SynthDawDreamer(SynthBase):
 
 
     #TODO Implement 3 strategies here! Start with basic uniform
-    def randomize_patch(self):
+    def randomize_patch(self, technique):
         """
         Randomize the current patch. Overridden parameteres will be unaffected.
+        Args:
+            technique: Defines the sampling technique used for data generation
+                of the parameter space.
         """
-        technique = "uniform"
-
         if self.loaded_plugin:
             random_patch = []
             #First type
@@ -156,9 +157,9 @@ class SynthDawDreamer(SynthBase):
                         random_patch.append((key, 1))
                     #If we can automate this parameter:
                     elif self.parametersDesc[key]["isAutomatable"] and not self.parametersDesc[key]["isDiscrete"]:
-                        random_patch.append((key, np.random.uniform(0,1)))
+                        random_patch.append((key, np.random.uniform(0, 1)))
                     elif self.parametersDesc[key]["isDiscrete"]:
-                        print(self.parametersDesc[key])
+                        print(f"Parameter{self.parametersDesc[key]} is discrete.")
 
             self.set_patch(random_patch)
         else:

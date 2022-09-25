@@ -114,7 +114,7 @@ class SynthVST(SynthBase):
 
     def get_audio(self):
         """
-        Return monophonic audio from rendered patch
+        Return monophonic audio from rendered patch.
 
         :return: An audio buffer of the rendered patch
         :rtype: :class:`spiegelib.core.audio_buffer.AudioBuffer`
@@ -128,14 +128,19 @@ class SynthVST(SynthBase):
             raise Exception('Patch must be rendered before audio can be retrieved')
 
 
-    def randomize_patch(self):
+    def randomize_patch(self, technique):
         """
         Randomize the current patch. Overridden parameteres will be unaffected.
+        technique: Defines the sampling technique used for data generation
+            of the parameter space.
         """
 
         if self.loaded_plugin:
-            random_patch = self.generator.get_random_patch()
-            self.set_patch(random_patch)
+            if technique == 'uniform':
+                random_patch = self.generator.get_random_patch()
+                self.set_patch(random_patch)
+            else:
+                print(f"Sampling technique {technique} has not been implemented using librenderman")
 
         else:
             print("Please load plugin first.")
