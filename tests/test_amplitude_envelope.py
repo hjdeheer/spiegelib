@@ -13,7 +13,7 @@ import torch
 import torchaudio
 import utils
 
-class TestSpectralFlatness():
+class TestAmplitudeEnvelope():
 
     def test_empty_construction(self):
 

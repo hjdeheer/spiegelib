@@ -14,6 +14,7 @@ from .spectrogram import Spectrogram
 from .mel_spectrogram import MelSpectrogram
 from .cqt_chromagram import CQTChromagram
 from .amplitude_envelope import AmplitudeEnvelope
+from .root_mean_squared_energy import RMS
 from .spectral_summarized import SpectralSummarized
 from .spectral_flatness import SpectralFlatness
 from .stft import STFT
