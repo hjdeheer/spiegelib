@@ -12,5 +12,6 @@ from .mfcc import MFCC
 from .mfccS2S import MFCCS2S
 from .spectrogram import Spectrogram
 from .mel_spectrogram import MelSpectrogram
+from .cqt_chromagram import CQTChromagram
 from .spectral_summarized import SpectralSummarized
 from .stft import STFT
