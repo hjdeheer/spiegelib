@@ -1,5 +1,5 @@
 """
-Tests for Spectral Summarized class
+Tests for SpectralFlatness class
 
 """
 
