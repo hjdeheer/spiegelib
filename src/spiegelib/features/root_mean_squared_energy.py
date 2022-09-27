@@ -10,7 +10,7 @@ from spiegelib import AudioBuffer
 from spiegelib.features.features_base import FeaturesBase
 import spiegelib.core.utils as utils
 
-class RMS(FeaturesBase):
+class RMSE(FeaturesBase):
 
     """
     Args:
