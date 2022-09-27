@@ -47,8 +47,6 @@ class TestCQTChromagrams():
         ]
         s2s_chroma = torch.cat(oct_cqt, dim=-1)
 
-        print(s2s_chroma.shape)
-
         mse = ((s2s_chroma - sp_chroma) ** 2).mean()
         error = 0.000001
         assert mse < error

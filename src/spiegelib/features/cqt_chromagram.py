@@ -53,7 +53,7 @@ class CQTChromagram(FeaturesBase):
             fmin=self.fmins[oct-1],
             n_chroma=self.n_chroma,
             bins_per_octave=self.bins_per_octave
-        ), ) for oct in range(1, 10)]
+        )) for oct in range(1, 10)]
 
         features = np.concatenate(features, axis=1)
 

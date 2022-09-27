@@ -14,4 +14,5 @@ from .spectrogram import Spectrogram
 from .mel_spectrogram import MelSpectrogram
 from .cqt_chromagram import CQTChromagram
 from .spectral_summarized import SpectralSummarized
+from .spectral_flatness import SpectralFlatness
 from .stft import STFT
