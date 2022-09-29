@@ -140,7 +140,7 @@ class SynthDawDreamer(SynthBase):
 
 
     #TODO Implement 3 strategies here! Start with basic uniform
-    def randomize_patch(self, technique, samples = None):
+    def randomize_patch(self, technique):
         """
         Randomize the current patch. Overridden parameteres will be unaffected.
         Args:
@@ -157,22 +157,7 @@ class SynthDawDreamer(SynthBase):
                         random_patch.append((key, np.random.uniform(0, 1)))
                     elif self.parametersDesc[key]["isDiscrete"]:
                         print(f"Parameter{self.parametersDesc[key]} is discrete.")
-            if technique == "normal":
-                assert samples is not None
-                for key, value in self.patch:
-                    #If no model of this current param -> model to be 1
-                    if not bool(samples[key]):
-                        random_patch.append((key, 1))
-                    else:
-                        mean = samples[key]['mean']
-                        std = samples[key]['std']
-                        randomValue = np.random.normal(mean, std)
-                        if randomValue < 0:
-                            random_patch.append((key, 0))
-                        elif randomValue > 1:
-                            random_patch.append((key, 1))
-                        else:
-                            random_patch.append((key, randomValue))
+
             self.set_patch(random_patch)
         else:
             print("Please load plugin first.")

@@ -128,7 +128,7 @@ class DatasetGenerator():
 
 
 
-    def generate(self, size, technique='uniform', file_prefix="", fit_scaler_only=None, samples = None):
+    def generate(self, size, technique='uniform', file_prefix="", fit_scaler_only=None):
         """
         Generate dataset with a set of random patches. Saves the extracted features
         and parameter settings in separate .npy files. Files are stored in the output
@@ -143,8 +143,6 @@ class DatasetGenerator():
             size (int): Number of different synthesizer patches to render.
             technique (str, optional): Defines the sampling technique used for data generation
                 of the parameter space.
-            samples (nparray, optional): If not None, technique must be set to normal, since sampling now is done by
-            drawing random samples from a normal distribution for each parameter
             file_prefix (str, optional): filename prefix for all output data.
             fit_scaler_only (list : bool, optional): If this is set to True, then
                 no data will be saved and only scaler will be set or reset
@@ -158,12 +156,9 @@ class DatasetGenerator():
             assert len(fit_scaler_only) == len(self.features)
             assert all(isinstance(el, bool) for el in fit_scaler_only)
 
-        #if samples are not none
-        if samples is not None:
-            assert technique == "normal"
 
         # Get a single example to determine required array size required
-        audio = self.synth.get_random_example(technique, samples)
+        audio = self.synth.get_random_example(technique)
 
         #Initialize patch set
         patch = self.synth.get_patch()
@@ -186,7 +181,7 @@ class DatasetGenerator():
 
         #Generate all samples
         for i in trange(size, desc="Generating samples"):
-            audio = self.synth.get_random_example(technique, samples)
+            audio = self.synth.get_random_example(technique)
             patch_set[i] = [p[1] for p in self.synth.get_patch()]
 
             #Save rendered audio if required
