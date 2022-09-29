@@ -15,7 +15,7 @@ class MelSpectrogram(FeaturesBase):
     """
     Args:
         frame_size (int, optional): Size of FFT to use when calculating MFCCs, defaults to 2048
-        window_length (int or None, optional): Specifies the size of the  
+        window_length (int or None, optional): Specifies the size of the window
         hop_size (int, optional): hop length in samples, defaults to 512
         power (float, optional): Exponent for the magnitude 
         center (boolean, optional): True if signal should be padded 
