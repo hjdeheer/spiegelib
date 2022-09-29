@@ -148,21 +148,27 @@ class SynthDawDreamer(SynthBase):
                 of the parameter space.
         """
         if self.loaded_plugin:
+            #Dictionary of i : j, where parameter i must have constant value j
+            #Keep tune, transpose, global volume and switches at constant
+            constantParams = {2: 1, 3: 0.5, 13: 0.5, 44: 1, 66: 1, 88: 1, 110: 1, 132: 1, 154: 1}
             random_patch = []
             #First type
             if technique == "uniform":
                 for key, value in self.patch:
-                    #If we can automate this parameter:
-                    if self.parametersDesc[key]["isAutomatable"] and not self.parametersDesc[key]["isDiscrete"]:
+                    if key in constantParams:
+                        random_patch.append((key, constantParams[key]))
+                    elif self.parametersDesc[key]["isAutomatable"] and not self.parametersDesc[key]["isDiscrete"]:
                         random_patch.append((key, np.random.uniform(0, 1)))
-                    elif self.parametersDesc[key]["isDiscrete"]:
-                        print(f"Parameter{self.parametersDesc[key]} is discrete.")
             if technique == "normal":
                 assert samples is not None
                 for key, value in self.patch:
-                    #If no model of this current param -> model to be 1
-                    if not bool(samples[key]):
-                        random_patch.append((key, 1))
+                    if key in constantParams:
+                        random_patch.append((key, constantParams[key]))
+                    #If no model available of this parameter:
+                    elif not bool(samples[key]):
+                        # We want to randomize cutoff and resonance uniformly.
+                        if key == 0 or key == 1:
+                            random_patch.append((key, np.random.uniform(0, 1)))
                     else:
                         mean = samples[key]['mean']
                         std = samples[key]['std']
