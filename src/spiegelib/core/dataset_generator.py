@@ -2,10 +2,8 @@
 """
 This class can be used to generate datasets from instances of synthesizers. This is
 useful for creating large sets of data for training and validating deep learning models.
-
 Examples
 ^^^^^^^^
-
 Example generating 50000 training samples and 10000 testing samples from the
 *Dexed* VST FM Synthesizer. Each sample is created by creating a random
 patch configuration in *Dexed*, and then rendering a one second audio clip of
@@ -14,20 +12,15 @@ and the synthesizer parameters used to synthesize the audio are saved in numpy f
 Audio features are standardized by removing the mean and scaling to unit variance. The
 values used for scaling are saved after the first dataset generation so they
 can be used on future data.
-
 .. code-block:: python
     :linenos:
-
     import spiegelib as spgl
-
     synth = spgl.synth.SynthVST("/Library/Audio/Plug-Ins/VST/Dexed.vst",
                                 note_length_secs=1.0,
                                 render_length_secs=1.0)
-
     # Mel-frequency Cepstral Coefficients audio feature extractor.
     feature = spgl.features.MFCC(num_mfccs=13, frame_size=2048,
                                   hop_size=1024 time_major=True)
-
     features = [feature]
     # Setup generator for MFCC output and generate 50000 training examples
     # and 10000 testing examples
@@ -37,7 +30,6 @@ can be used on future data.
     generator.generate(50000, file_prefix="train_")
     generator.generate(10000, file_prefix="test_")
     generator.save_scaler('data_scaler.pkl')
-
 """
 
 import os
@@ -52,7 +44,6 @@ from spiegelib.synth.synth_base import SynthBase
 
 class DatasetGenerator():
     """
-
     Args:
         synth (Object): Synthesizer to generate test data from. Must inherit from
             :class:`spiegelib.synth.SynthBase`.
@@ -64,7 +55,6 @@ class DatasetGenerator():
             object does not have a scaler set, then this will train a data scaler based on the
             generated dataset and store them in the features object. Call :py:meth:`save_scaler`
             to store scaler settings. Defaults to a list of False
-
     Attributes:
         features_filename (str): filename for features output file, defaults to features.npy
         patches_filename (str): filename for patches output file, defaults to patches.npy
@@ -128,7 +118,7 @@ class DatasetGenerator():
 
 
 
-    def generate(self, size, technique='uniform', file_prefix="", fit_scaler_only=None):
+    def generate(self, size, technique='uniform', file_prefix="", fit_scaler_only=None, samples = None):
         """
         Generate dataset with a set of random patches. Saves the extracted features
         and parameter settings in separate .npy files. Files are stored in the output
@@ -138,16 +128,16 @@ class DatasetGenerator():
         files are being saved (configured during construction), then the audio files
         are saved in a separate audio folder and all audio files are also prefixed
         by the file_prefix.
-
         Args:
             size (int): Number of different synthesizer patches to render.
             technique (str, optional): Defines the sampling technique used for data generation
                 of the parameter space.
+            samples (nparray, optional): If not None, technique must be set to normal, since sampling now is done by
+            drawing random samples from a normal distribution for each parameter
             file_prefix (str, optional): filename prefix for all output data.
             fit_scaler_only (list : bool, optional): If this is set to True, then
                 no data will be saved and only scaler will be set or reset
                 for the ith feature object.
-
         """
         if fit_scaler_only == None:
             fit_scaler_only = [False] * len(self.features)
@@ -156,9 +146,12 @@ class DatasetGenerator():
             assert len(fit_scaler_only) == len(self.features)
             assert all(isinstance(el, bool) for el in fit_scaler_only)
 
+        #if samples are not none
+        if samples is not None:
+            assert technique == "normal"
 
         # Get a single example to determine required array size required
-        audio = self.synth.get_random_example(technique)
+        audio = self.synth.get_random_example(technique, samples)
 
         #Initialize patch set
         patch = self.synth.get_patch()
@@ -181,7 +174,7 @@ class DatasetGenerator():
 
         #Generate all samples
         for i in trange(size, desc="Generating samples"):
-            audio = self.synth.get_random_example(technique)
+            audio = self.synth.get_random_example(technique, samples)
             patch_set[i] = [p[1] for p in self.synth.get_patch()]
 
             #Save rendered audio if required
@@ -214,7 +207,6 @@ class DatasetGenerator():
     def save_scaler(self, feature_index, file_name):
         """
         Save feature scaler as a pickle file.
-
         Args:
             feature_index (int): feature index of features list that obj that must inherit from FeatureBase
             file_name (str): file name for scaler pickle file
