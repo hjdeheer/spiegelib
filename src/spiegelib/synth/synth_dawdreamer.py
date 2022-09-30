@@ -173,12 +173,7 @@ class SynthDawDreamer(SynthBase):
                         mean = samples[key]['mean']
                         std = samples[key]['std']
                         randomValue = np.random.normal(mean, std)
-                        if randomValue < 0:
-                            random_patch.append((key, 0))
-                        elif randomValue > 1:
-                            random_patch.append((key, 1))
-                        else:
-                            random_patch.append((key, randomValue))
+                        random_patch.append((key, np.clip(randomValue, 0, 1)))
             self.set_patch(random_patch)
         else:
             print("Please load plugin first.")
