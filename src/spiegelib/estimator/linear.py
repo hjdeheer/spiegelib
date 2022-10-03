@@ -11,7 +11,7 @@ import numpy as np
 
 class LinearBackBone(layers.Layer):
 
-    def __init__(self, input_dim, hidden_dim=2048, output_dim=2048):
+    def __init__(self, hidden_dim=2048, output_dim=2048):
         super(LinearBackBone, self).__init__()
         
         self.dense1 = layers.Dense(hidden_dim, use_bias=True)

@@ -11,9 +11,36 @@ import numpy as np
 
 class LSTMBackBone(layers.Layer):
 
-    def __init__(self, input_dim, output_dim=2048):
-        pass
+    # Sound2Synth uses a 2 layered Bidirectional LSTM and feeds the output to a Fully Connected layer
+    def __init__(self, hidden_dim=512, output_dim=2048):
+        super(LSTMBackBone, self).__init__()
+
+        self.lstm1 = layers.Bidirectional(layers.LSTM(units=hidden_dim, return_sequences=True))
+        self.lstm2 = layers.Bidirectional(layers.LSTM(units=2*2*output_dim))
+        self.dense1 = layers.Dense(output_dim, use_bias=True)
+        self.act1 = layers.LeakyReLU(alpha=1e-2)
+        
         
     
     def call(self, inputs): 
-        pass
+        y = inputs
+        t = self.lstm1(y)
+        t = self.lstm2(t)
+        t = t[1][0].swapaxes(0, 1)
+
+        x = t.reshape(y.shape[0], -1)
+
+        x = self.dense1(x)
+        x = self.act1(x)
+
+        return x
+
+
+if __name__ == "__main__":
+    lstm = LSTMBackBone()
+
+    inputs = np.random.rand(5, 3, 10)
+
+    print(lstm)
+
+    lstm(inputs)
