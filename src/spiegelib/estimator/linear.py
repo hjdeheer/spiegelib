@@ -19,7 +19,7 @@ class LinearBackBone(layers.Layer):
         self.dense2 = layers.Dense(output_dim, use_bias=True)
         self.act2 = layers.LeakyReLU(alpha=1e-2)
 
-    
+
     def call(self, inputs):
         y = inputs
         x = tf.reshape(y, [y.shape[0], -1])
@@ -27,7 +27,7 @@ class LinearBackBone(layers.Layer):
         x = self.dense1(x)
         x = self.act1(x)
         x = self.dense2(x)
-        x = self.act1(x)
+        x = self.act2(x)
 
         return x
         
