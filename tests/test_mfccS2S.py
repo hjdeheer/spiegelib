@@ -132,7 +132,9 @@ class TestMFCCS2S():
                 "mel_scale"  : "htk"
         }
         )(torch.Tensor(sine))
-
+        print(torch_mel.shape)
         mse = ((torch_mel - librosa_mel) ** 2).mean()
         error = 0.000001
+        assert torch_mel.shape == librosa_mel.shape
         assert mse < error
+        

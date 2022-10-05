@@ -128,7 +128,8 @@ class SynthDawDreamer(SynthBase):
         """
 
         if self.rendered_patch:
-            audio = AudioBuffer(self.engine.get_audio(), self.sample_rate)
+            currAudio = self.engine.get_audio()
+            audio = AudioBuffer(currAudio[0], self.sample_rate)
             return audio
 
         else:
