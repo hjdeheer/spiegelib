@@ -40,5 +40,5 @@ class Conv8(TFEstimatorBase):
         self.model.compile(
             optimizer=tf.optimizers.Adam(),
             loss=TFEstimatorBase.rms_error,
-            metrics=['mean_squared_error']
+            metrics=['accuracy']
         )
