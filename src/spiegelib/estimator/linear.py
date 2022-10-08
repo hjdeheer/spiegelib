@@ -22,9 +22,9 @@ class LinearBackBone(layers.Layer):
 
     def call(self, inputs):
         y = inputs
-        x = tf.reshape(y, [y.shape[0], -1])
+        #x = tf.reshape(y, [y.shape[0], -1])
         
-        x = self.dense1(x)
+        x = self.dense1(y)
         x = self.act1(x)
         x = self.dense2(x)
         x = self.act2(x)
