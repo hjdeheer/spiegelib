@@ -150,8 +150,8 @@ class SynthDawDreamer(SynthBase):
         """
         if self.loaded_plugin:
             #Dictionary of i : j, where parameter i must have constant value j
-            #Keep tune, transpose, global volume and switches at constant
-            constantParams = {2: 1, 3: 0.5, 13: 0.5, 44: 1, 66: 1, 88: 1, 110: 1, 132: 1, 154: 1}
+            #Keep tune, transpose, algorithm, global volume and switches at constant
+            constantParams = {2: 1, 3: 0.5, 4: 1, 13: 0.5, 44: 1, 66: 1, 88: 1, 110: 1, 132: 1, 154: 1}
             random_patch = []
             #First type
             if technique == "uniform":

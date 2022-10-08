@@ -49,7 +49,6 @@ class Conv6(TFEstimatorBase):
         self.model.add(layers.Dropout(0.20))
         self.model.add(layers.Flatten())
         self.model.add(layers.Dense(self.num_outputs))
-
         self.model.compile(
             optimizer=tf.optimizers.Adam(),
             loss=TFEstimatorBase.rms_error,

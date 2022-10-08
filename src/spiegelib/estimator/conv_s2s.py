@@ -11,13 +11,12 @@ import numpy as np
 class ConvBackBone(layers.Layer):
 
     # Sound2Synth uses VGG 11 network
-    def __init__(self, in_channels= 1, output_dim= 2048):
+    def __init__(self, input_dim, output_dim= 2048):
         super(ConvBackBone, self).__init__()
-        self.in_channels = in_channels
+        self.input_dim = input_dim
         self.output_dim = output_dim
         #Conv2d layer -> batch normalization -> leaky Relu _> max pool2d
-        self.pad1 = tf.keras.layers.ZeroPadding2D(padding=1)
-        self.conv1 = tf.keras.layers.Conv2D(filters=64, kernel_size=3)
+        self.conv1 = tf.keras.layers.Conv2D(filters=64, kernel_size=3, input_shape=self.input_dim)
         self.norm1 = tf.keras.layers.BatchNormalization()
         self.act1 = tf.keras.layers.LeakyReLU(1e-2)
         self.max1 = tf.keras.layers.MaxPool2D()
@@ -66,9 +65,12 @@ class ConvBackBone(layers.Layer):
         self.dense1 = tf.keras.layers.Dense(output_dim, use_bias=True)
         self.act9 = layers.LeakyReLU(alpha=1e-2)
 
+
+
+
     def call(self, inputs):
         y = inputs
-        x = self.max1(self.act1(self.norm1(self.conv1(self.pad1(y)))))
+        x = self.max1(self.act1(self.norm1(self.conv1(y))))
         x = self.max2(self.act2(self.norm2(self.conv2(self.pad2(x)))))
         x = self.act3(self.norm3(self.conv3(self.pad3(x))))
         x = self.max3(self.act4(self.norm4(self.conv4(self.pad4(x)))))
