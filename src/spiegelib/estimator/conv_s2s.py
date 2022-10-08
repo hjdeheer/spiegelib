@@ -65,8 +65,13 @@ class ConvBackBone(layers.Layer):
         self.dense1 = tf.keras.layers.Dense(output_dim, use_bias=True)
         self.act9 = layers.LeakyReLU(alpha=1e-2)
 
-
-
+    def get_config(self):
+        config = super().get_config()
+        config.update({
+            "input_dim": self.input_dim,
+            "output_dim": self.output_dim,
+        })
+        return config
 
     def call(self, inputs):
         y = inputs
