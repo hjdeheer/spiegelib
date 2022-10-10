@@ -152,6 +152,8 @@ class SynthDawDreamer(SynthBase):
             #Dictionary of i : j, where parameter i must have constant value j
             #Keep tune, transpose, algorithm, global volume and switches at constant
             constantParams = {2: 1, 3: 0.5, 4: 1, 13: 0.5, 44: 1, 66: 1, 88: 1, 110: 1, 132: 1, 154: 1}
+            #For evaluation technique, set all volume params to 1
+            volumeParams = {0: 1, 31: 1, 53: 1, 75: 1, 97: 1, 119: 1, 141: 1}
             random_patch = []
             #First type
             if technique == "uniform":
@@ -175,6 +177,14 @@ class SynthDawDreamer(SynthBase):
                         std = samples[key]['std']
                         randomValue = np.random.normal(mean, std)
                         random_patch.append((key, np.clip(randomValue, 0, 1)))
+            if technique == "evaluation":
+                for key, value in self.patch:
+                    if key in constantParams:
+                        random_patch.append((key, constantParams[key]))
+                    elif key in volumeParams:
+                        random_patch.append((key, volumeParams[key]))
+                    elif self.parametersDesc[key]["isAutomatable"] and not self.parametersDesc[key]["isDiscrete"]:
+                        random_patch.append((key, np.random.uniform(0, 1)))
             self.set_patch(random_patch)
         else:
             print("Please load plugin first.")
