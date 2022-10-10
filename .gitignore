@@ -9,8 +9,9 @@ __pycache__/
 *~
 data/
 !tests/data
-
+src/test.py
 audio/
+.idea
 
 # due to using tox and pytest
 .tox
