@@ -11,8 +11,8 @@ import numpy as np
 class ConvBackBone(layers.Layer):
 
     # Sound2Synth uses VGG 11 network
-    def __init__(self, input_dim, output_dim= 2048):
-        super(ConvBackBone, self).__init__()
+    def __init__(self, input_dim, output_dim= 2048, **kwargs):
+        super(ConvBackBone, self).__init__(**kwargs)
         self.input_dim = input_dim
         self.output_dim = output_dim
         #Conv2d layer -> batch normalization -> leaky Relu _> max pool2d

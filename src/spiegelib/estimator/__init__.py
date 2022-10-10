@@ -19,5 +19,6 @@ from .lstm import LSTM
 from .mlp import MLP
 
 # Extra layers and utils for TF
+from .conv_s2s import ConvBackBone
 from .highway_layer import HighwayLayer
 from .tf_epoch_logger import TFEpochLogger
