@@ -9,12 +9,13 @@ __pycache__/
 *~
 data/
 !tests/data
-src/test.py
+
 audio/
 .idea
-
+src/test.py
 # due to using tox and pytest
 .tox
 .cache
 .coverage
 src/statistical_analysis.py
+
