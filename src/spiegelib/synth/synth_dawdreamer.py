@@ -155,36 +155,29 @@ class SynthDawDreamer(SynthBase):
             #For evaluation technique, set all volume params to 1
             volumeParams = {0: 1, 31: 1, 53: 1, 75: 1, 97: 1, 119: 1, 141: 1}
             random_patch = []
+            overriddenSet = set()
+            for (param, value) in self.overridden_params:
+                overriddenSet.add(param)
             #First type
             if technique == "uniform":
                 for key, value in self.patch:
-                    if key in constantParams:
-                        random_patch.append((key, constantParams[key]))
-                    elif self.parametersDesc[key]["isAutomatable"] and not self.parametersDesc[key]["isDiscrete"]:
-                        random_patch.append((key, np.random.uniform(0, 1)))
+                    #If randomisable param
+                    if key not in overriddenSet:
+                        random_patch.append((key,  np.random.uniform(0, 1)))
             if technique == "normal":
                 assert samples is not None
                 for key, value in self.patch:
-                    if key in constantParams:
-                        random_patch.append((key, constantParams[key]))
                     #If no model available of this parameter:
-                    elif not bool(samples[key]):
-                        # We want to randomize cutoff and resonance uniformly.
-                        if key == 0 or key == 1:
-                            random_patch.append((key, np.random.uniform(0, 1)))
-                    else:
-                        mean = samples[key]['mean']
-                        std = samples[key]['std']
-                        randomValue = np.random.normal(mean, std)
-                        random_patch.append((key, np.clip(randomValue, 0, 1)))
-            if technique == "evaluation":
-                for key, value in self.patch:
-                    if key in constantParams:
-                        random_patch.append((key, constantParams[key]))
-                    elif key in volumeParams:
-                        random_patch.append((key, volumeParams[key]))
-                    elif self.parametersDesc[key]["isAutomatable"] and not self.parametersDesc[key]["isDiscrete"]:
-                        random_patch.append((key, np.random.uniform(0, 1)))
+                    if key not in overriddenSet:
+                        if not bool(samples[key]):
+                            # We want to randomize cutoff and resonance uniformly.
+                            if key == 0 or key == 1:
+                                random_patch.append((key, np.random.uniform(0, 1)))
+                        else:
+                            mean = samples[key]['mean']
+                            std = samples[key]['std']
+                            randomValue = np.random.normal(mean, std)
+                            random_patch.append((key, np.clip(randomValue, 0, 1)))
             self.set_patch(random_patch)
         else:
             print("Please load plugin first.")
