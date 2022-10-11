@@ -192,6 +192,20 @@ class SynthDawDreamer(SynthBase):
             self.patch[i] = (i, self.generator.get_parameter(i))
 
 
+    def get_automatable_keys(self):
+        """
+        Gets all parameter keys that are automatable and not overridden.
+        Returns:
+        A set with parameter keys.
+        """
+        overriddenSet = set()
+        automatableSet = []
+        for (param, value) in self.overridden_params:
+            overriddenSet.add(param)
+        for key, value in self.patch:
+            if key not in overriddenSet:
+                automatableSet.append(key)
+        return automatableSet
 
 ################################################################################
 

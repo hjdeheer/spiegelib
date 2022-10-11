@@ -37,10 +37,10 @@ import os
 import numpy as np
 import scipy.io.wavfile
 from tqdm import trange
-
+import tensorflow as tf
 from spiegelib.features.features_base import FeaturesBase
 from spiegelib.synth.synth_base import SynthBase
-
+from scipy.ndimage import gaussian_filter1d
 
 class DatasetGenerator():
     """
@@ -228,6 +228,8 @@ class DatasetGenerator():
             os.mkdir(self.audio_folder_path)
 
 
+
+
     def create_feature_folder(self, feature):
         """
         Check for and create the feature output folder if necessary
@@ -247,3 +249,36 @@ class DatasetGenerator():
         self.patch_folder_path = os.path.abspath(os.path.join(self.output_folder, self.patch_folder_name))
         if not (os.path.exists(self.patch_folder_path) and os.path.isdir(self.patch_folder_path)):
             os.mkdir(self.patch_folder_path)
+
+
+    def patch_to_onehot(self, parameterModel):
+        """
+        Converts patches with parameters ranging from 0 - 1 to one hot encoded parameters
+        """
+        filenames = os.listdir(self.patch_folder_path)
+        #Get all keys of params that are not overridden
+        automatableParams = self.synth.get_automatable_keys()
+        bins = 64
+        for file in filenames:
+            allPatches = []
+            currPatches = np.load(os.path.join(self.patch_folder_path, file))
+            for patch in currPatches:
+                assert len(patch) == len(automatableParams)
+                patch_onehot = np.array([])
+                for i, param in enumerate(patch):
+                    maxParam = parameterModel[automatableParams[i]]['max']
+                    isDiscrete = parameterModel[automatableParams[i]]['isDiscrete']
+                    #If continuous put in 64 bins and apply gaussian smoothing
+                    if not isDiscrete:
+                        value = round(param * (bins - 1))
+                        onehot = tf.reshape(tf.one_hot([value], bins), bins).numpy()
+                        onehot = gaussian_filter1d(onehot, 1)
+                    else:
+                        value = round(param * maxParam)
+                        onehot = tf.reshape(tf.one_hot([value], maxParam + 1), maxParam + 1).numpy()
+                    patch_onehot = np.concatenate((patch_onehot, onehot))
+                allPatches.append(patch_onehot)
+            allPatches = np.array(allPatches)
+            np.save(os.path.join(self.patch_folder_path, "onehot_" + file), allPatches)
+        return
+

@@ -7,40 +7,79 @@ from spiegelib.estimator.lstm_s2s import LSTMBackBone
 import tensorflow as tf
 
 
+def extendParamModel(parameterModel, synthDescription):
+    #Add min-max for missing variables
+    for i, (pModel, pSynth) in enumerate(zip(parameterModel, synthDescription)):
+        if 0 <= i <= 3:
+            pModel['min'] = 0
+            pModel['max'] = 99
+            pModel['name'] = pSynth['name']
+            pModel['isDiscrete'] = False
+        elif 'min' not in pModel:
+            #These are switches
+            pModel['min'] = 0
+            pModel['max'] = 1
+            pModel['name'] = pSynth['name']
+            pModel['isDiscrete'] = True
+    for pModel, pSynth in zip(parameterModel, synthDescription):
+        pModel['name'] = pSynth['name']
+        #If parameter ranges from 0-99 it is not discrete
+        if pModel['max'] == 99:
+            pModel['isDiscrete'] = False
+        else:
+            pModel['isDiscrete'] = True
+
+
 
 
 import pandas as pd
 synth = spgl.synth.SynthDawDreamer("../vsts/Dexed.dll",
                             note_length_secs=1.0,
                             render_length_secs=1.0)
-
-# synth2 = spgl.synth.SynthVST("../vsts/Dexed.dll",
-#                             note_length_secs=1.0,
-#                             render_length_secs=1.0)
-
-print(synth.parametersDesc)
+#load 9 param config
+synth.load_state("../vsts/op2_dexed.json")
 parameterModel = np.load("../data/presets/allParams.npy", allow_pickle=True)
+extendParamModel(parameterModel, synth.parametersDesc)
+
+
 
 
 # Mel-frequency Cepstral Coefficients audio feature extractor.
 feature1 = spgl.features.STFT(fft_size=512, hop_size=256, output='magnitude', time_major=True)
-feature2 = spgl.features.MFCC(num_mfccs=20, frame_size=2048, hop_size=1024, time_major=True)
-feature3 = spgl.features.MelSpectrogram()
-#feature3 = FFT(output='power')
+#feature2 = spgl.features.MFCC(num_mfccs=100, frame_size=2048, hop_size=512, time_major=True)
+#feature3 = spgl.features.MelSpectrogram(n_mels=256, hop_size=512, time_major=True)
+#feature4 = spgl.features.Spectrogram(hop_size=512, time_major=True)
+# feature5 = spgl.features.CQTChromagram()
+
+features = [feature1]
+generator = spgl.DatasetGenerator(synth, features, output_folder="../data/evaluation", save_audio=True, scale=[True])
+#generator.generate(25, file_prefix="", technique='uniform')
+generator.patch_to_onehot(parameterModel)
 
 
-# feature4 = Spectrogram()
-# feature5 = RMS()
-# features = [feature1, feature2, feature3]
-# generator = spgl.DatasetGenerator(synth, features, output_folder="../data/dataset_uniform", save_audio=False)
+
+# generator = spgl.DatasetGenerator(synth, features, output_folder="D:\data_uniform", save_audio=True, scale=[True])
 # generator.generate(30000, file_prefix="train_", technique='uniform')
 # generator.generate(10000, file_prefix="test_", technique='uniform')
+
+#generator.save_scaler(0, "data_scaler.pkl")
+# generator.save_scaler(1, "data_scaler.pkl")
+# generator.save_scaler(2, "data_scaler.pkl")
+# generator.save_scaler(3, "data_scaler.pkl")
+# generator.save_scaler(4, "data_scaler.pkl")
+
+# s = np.load("../data/test/STFT/features.npy")
+# s1 = np.load("../data/test/MFCC/features.npy")
+# s2 = np.load("../data/test/MelSpectrogram/features.npy")
+# s3 = np.load("../data/test/Spectrogram/features.npy")
+# s4 = np.load("../data/test/CQTChromagram/features.npy")
 #
+# print("TEST")
+# t = np.load("../data/dataset_uniform_scaled/MelSpectrogram/test_features.npy")
+# print(s)
 
-
-s = np.load("../data/dataset_uniform/STFT/test_features.npy")
-
-print(s)
+#
+# print(s)
 # r = np.load("../data/dataset_uniform/MFCC/train_features.npy")
 # p = np.load("../data/dataset_uniform/MFCCS2S/train_features.npy")
 
@@ -134,18 +173,4 @@ print(s)
 # buffer = spgl.AudioBuffer("../audio/test4.wav")
 # buffer.plot_spectrogram()
 # plt.show()
-
-
-
-# # Mel-frequency Cepstral Coefficients audio feature extractor.
-# features = spgl.features.MFCC(num_mfccs=13, frame_size=2048,
-#                               hop_size=1024, time_major=True)
-#
-#
-# # %%
-# # Setup generator for MFCC output and generate 50000 training examples
-# # and 10000 testing examples
-# generator = spgl.DatasetGenerator(synth, features, output_folder="../data/data_FM_mfcc", save_audio=True)
-#
-#generator.generate(1, file_prefix="train_")
 
