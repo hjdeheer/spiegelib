@@ -9,10 +9,12 @@ __pycache__/
 *~
 data/
 !tests/data
-
+.idea/spiegelib.iml
+.idea/
 audio/
-.idea
 src/test.py
+
+
 # due to using tox and pytest
 .tox
 .cache
