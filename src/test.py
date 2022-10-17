@@ -52,7 +52,7 @@ feature1 = spgl.features.STFT(fft_size=512, hop_size=256, output='magnitude', ti
 # feature5 = spgl.features.CQTChromagram()
 
 features = [feature1]
-generator = spgl.DatasetGenerator(synth, features, output_folder="../data/evaluation", save_audio=True, scale=[True])
+generator = spgl.DatasetGenerator(synth, features, output_folder="../data/uniform_9", save_audio=True, scale=[True])
 #generator.generate(25, file_prefix="", technique='uniform')
 generator.patch_to_onehot(parameterModel)
 

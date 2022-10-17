@@ -20,14 +20,14 @@ class Conv6(TFEstimatorBase):
         :class:`spiegelib.estimator.TFEstimatorBase`
     """
 
-    def __init__(self, input_shape, num_outputs, synth, num_bins, **kwargs):
+    def __init__(self, input_shape, num_outputs, automatable_keys, num_bins, **kwargs):
         """
         Constructor
         """
-
-        super().__init__(input_shape, num_outputs, **kwargs)
-        self.synth = synth
+        self.automatable_keys = automatable_keys
         self.num_bins = num_bins
+        super().__init__(input_shape, num_outputs, **kwargs)
+
 
     def build_model(self):
         """
@@ -50,9 +50,10 @@ class Conv6(TFEstimatorBase):
                                      activation='relu'))
         self.model.add(layers.Dropout(0.20))
         self.model.add(layers.Flatten())
-        self.model.add(layers.Dense(self.num_outputs))
+        self.model.add(layers.Dense(self.num_outputs, activation='sigmoid'))
         self.model.compile(
             optimizer=tf.optimizers.Adam(),
-            loss=ParameterLoss(synth=self.synth, num_bins=self.num_bins),
-            metrics=['accuracy']
+            loss=ParameterLoss(automatable_keys=self.automatable_keys, num_bins=self.num_bins),
+            #loss="categorical_crossentropy",
+            metrics=['accuracy', 'mean_squared_error']
         )

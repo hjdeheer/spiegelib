@@ -2,11 +2,18 @@ import numpy as np
 import tensorflow as tf
 
 from spiegelib import estimator
+from spiegelib.synth import SynthDawDreamer
+
+
 if __name__ == "__main__":
-    trainFeatures = np.load("../data/dataset_uniform/STFT/train_features.npy")
-    trainParams = np.load("../data/dataset_uniform/patch/train_patches.npy")
-    testFeatures = np.load("../data/dataset_uniform/STFT/test_features.npy")
-    testParams = np.load("../data/dataset_uniform/patch/test_patches.npy")
+    feature = "STFT"
+    technique = "uniform"
+    parameters = 9
+
+    trainFeatures = np.load("../data/uniform_9_50k/STFT/train_features.npy")
+    trainParams = np.load("../data/uniform_9_50k/patch/onehot16_train_patches.npy")
+    testFeatures = np.load("../data/uniform_9_50k/STFT/test_features.npy")
+    testParams = np.load("../data/uniform_9_50k/patch/onehot16_test_patches.npy")
 
     # Create "STFT Images" with one channel for 2D CNN
     trainFeatures = trainFeatures.reshape(trainFeatures.shape[0], trainFeatures.shape[1], trainFeatures.shape[2], 1)
@@ -16,16 +23,21 @@ if __name__ == "__main__":
 
     # Setup callbacks for trainings
     logger = estimator.TFEpochLogger()
-    earlyStopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)
+    earlyStopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
+    tensorboard = tf.keras.callbacks.TensorBoard(log_dir="../data/models/conv6_STFT_uniform_9_50K")
+
+    automatable_keys = np.load('../data/presets/automatableKeys.npy', allow_pickle=True)
+    automatable_params = np.load('../data/presets/allParamsUpdated.npy', allow_pickle=True)[automatable_keys]
 
     # Instantiate Conv6 Model with the input shape, output shape, and callbacks
-    cnn = estimator.Conv8(trainFeatures.shape[1:],
-                               trainParams.shape[-1],
-                               callbacks=[logger, earlyStopping])
+    cnn = estimator.Conv6(trainFeatures.shape[1:],
+                               trainParams.shape[-1], automatable_keys=automatable_params, num_bins=16,
+                               callbacks=[logger, earlyStopping, tensorboard])
 
-    cnn.add_training_data(trainFeatures, trainParams)
-    cnn.add_testing_data(testFeatures, testParams)
+    cnn.add_training_data(trainFeatures, trainParams, batch_size = 64)
+    cnn.add_testing_data(testFeatures, testParams, batch_size = 64)
     cnn.model.summary()
     cnn.fit(epochs=100)
-    cnn.save_model('../data/models/cnn_vgg11_uniform.h5')
-    logger.plot()
+    cnn.save_model('../data/models/conv6_STFT_uniform_9_50K/model.h5')
+    #logger.plot()
+
