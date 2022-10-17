@@ -14,7 +14,7 @@ class ParameterLoss(tf.keras.losses.Loss):
         self.automatable_keys = automatable_keys
         self.num_bins = num_bins
         self.weight = weight
-        self.cce = MeanSquaredError()
+        self.cce = CategoricalCrossentropy()
 
     def call(self, Y_true, Y_pred):
         losses = []
