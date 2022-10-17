@@ -251,15 +251,16 @@ class DatasetGenerator():
             os.mkdir(self.patch_folder_path)
 
 
-    def patch_to_onehot(self, parameterModel):
+    def patch_to_onehot(self, parameterModel, bins=16):
         """
         Converts patches with parameters ranging from 0 - 1 to one hot encoded parameters
         """
         filenames = os.listdir(self.patch_folder_path)
         #Get all keys of params that are not overridden
         automatableParams = self.synth.get_automatable_keys()
-        bins = 64
         for file in filenames:
+            if "onehot" in file:
+                continue
             allPatches = []
             currPatches = np.load(os.path.join(self.patch_folder_path, file))
             for patch in currPatches:
@@ -279,6 +280,6 @@ class DatasetGenerator():
                     patch_onehot = np.concatenate((patch_onehot, onehot))
                 allPatches.append(patch_onehot)
             allPatches = np.array(allPatches)
-            np.save(os.path.join(self.patch_folder_path, "onehot_" + file), allPatches)
+            np.save(os.path.join(self.patch_folder_path, "onehot" + str(bins) + "_" + file), allPatches)
         return
 

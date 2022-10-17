@@ -8,7 +8,7 @@ import spiegelib as spgl
 
 def main():
     synth_path = "../vsts/Dexed.dll"
-    model_path = "../data/models/conv6_STFT_uniform9/model.h5"
+    model_path = "../data/models/conv6onehot_STFT_uniform9/model.h5"
 
     source_path = "../data/evaluation/audio"
     save_path  = "../data/evaluation/predict"
@@ -29,7 +29,7 @@ def main():
     targets = spgl.AudioBuffer.load_folder(source_path)
 
     for i in range(len(targets)):
-        audio = matcher.match(targets[i])
+        audio = matcher.match(targets[i], onehot=True)
         audio.save(os.path.join(save_path, f'{i}.wav'))
 
 
@@ -39,9 +39,16 @@ def main():
     evaluation.evaluate()
     print(evaluation.get_scores())
     print(evaluation.get_stats())
-    bins = np.arange(0, 100, 2.5)
+    bins = np.arange(0, 60, 2.5)
     evaluation.plot_hist([0], 'mean_abs_error', bins)
+
+
+    plt.title("MFCC distance of Conv6-uniform-9 parameters")
+    plt.xlabel("MFCC distance")
+    plt.ylabel("Num samples")
     plt.show()
+
+
 
 if __name__ == "__main__":
     main()
