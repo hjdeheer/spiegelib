@@ -19,13 +19,18 @@ class Conv6(TFEstimatorBase):
         :class:`spiegelib.estimator.TFEstimatorBase`
     """
 
-    def __init__(self, input_shape, num_outputs, **kwargs):
+    def __init__(self, input_shape, num_outputs, synth, num_bins, **kwargs):
         """
         Constructor
         """
 
         super().__init__(input_shape, num_outputs, **kwargs)
+        self.synth = synth
+        self.num_bins = num_bins
 
+
+    def parameter_loss(self):
+        pass
 
     def build_model(self):
         """
