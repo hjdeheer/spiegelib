@@ -27,6 +27,7 @@ class SynthDawDreamer(SynthBase):
     def __init__(self, plugin_path=None, **kwargs):
         super().__init__(**kwargs)
 
+        self.parameterModel = None
         if plugin_path:
             self.load_plugin(plugin_path)
 
@@ -135,6 +136,15 @@ class SynthDawDreamer(SynthBase):
         else:
             raise Exception('Patch must be rendered before audio can be retrieved')
 
+
+
+    def load_parameterModel(self, path):
+        """
+        Loads parameter model as field of object
+        Args:
+            path: path to parameter model
+        """
+        self.parameterModel = np.load(path, allow_pickle=True)
 
     def write_to_wav(self, audio, path):
         wav.write(path, self.sample_rate, audio.transpose())

@@ -15,7 +15,6 @@ class ParameterLoss(tf.keras.losses.Loss):
         self.num_bins = num_bins
         self.weight = weight
         self.cce = MeanSquaredError()
-    
 
     def call(self, Y_true, Y_pred):
         losses = []
@@ -23,19 +22,20 @@ class ParameterLoss(tf.keras.losses.Loss):
 
         for parameter in self.automatable_keys:
             max_bins = self.num_bins
-            
+
             if parameter['isDiscrete']:
                 max_bins = parameter['max'] + 1
-            
-            losses.append(self.weight * self.cce(Y_true[pointer:pointer+max_bins], Y_pred[pointer:pointer+max_bins]) / max_bins)
+
+            losses.append(self.weight * self.cce(Y_true[pointer:pointer + max_bins],
+                                                 Y_pred[pointer:pointer + max_bins]) / max_bins)
             pointer += max_bins
-        
+
         return tf.math.reduce_mean(losses)
 
     def get_config(self):
         parent_config = super().get_config()
         return {
-                **parent_config,
-                "automatable_keys":self.automatable_keys,
-                "num_bins":self.num_bins
-                }
+            **parent_config,
+            "automatable_keys": self.automatable_keys,
+            "num_bins": self.num_bins
+        }
