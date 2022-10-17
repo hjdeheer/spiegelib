@@ -47,7 +47,6 @@ from spiegelib import AudioBuffer
 from spiegelib.synth.synth_base import SynthBase
 from spiegelib.features.features_base import FeaturesBase
 from spiegelib.estimator.estimator_base import EstimatorBase
-from utils import getParameterModel
 
 class SoundMatch():
     """
@@ -118,7 +117,7 @@ class SoundMatch():
         return self.patch
 
 
-    def match(self, target, onehot=False):
+    def match(self, target, onehot=None):
         """
         Attempt to estimate parameters for target audio
 
@@ -140,10 +139,10 @@ class SoundMatch():
         self.synth.set_patch(params)
         self.synth.render_patch()
         self.patch = self.synth.get_patch(skip_overridden=True)
-        return self.synth.get_audio()
+        return self.synth.get_audio(), params
 
 
-    def match_parameters(self, target, expand=False, onehot=False):
+    def match_parameters(self, target, expand=False, onehot=None):
         """
         Run estimation of parameters and use audio feature extraction if it
         has been set.
@@ -167,32 +166,28 @@ class SoundMatch():
         # Estimate parameters
         params = self.estimator.predict(input_data)
 
-        if onehot:
-            bins = 16
+        #If we do a one-hot encoding:
+        if onehot is not None:
+            bins = onehot
             converted = []
-            model = getParameterModel()
-            automatable = self.synth.get_automatable_keys()
-            left = 0
-            if model[automatable[0]]['isDiscrete']:
-                right = model[automatable[0]]['max'] + 1
-            else:
-                right = 16
-            for i, param in enumerate(automatable):
-                slice = params[left:right]
-                index = np.argmax(slice)
-                if model[automatable[i]]['isDiscrete']:
-                    value = index / model[automatable[i]]['max']
-                else:
-                    value = index / (bins - 1)
+            parameters = self.synth.parameterModel[self.synth.get_automatable_keys()]
+            pointer = 0
 
+            for parameter in parameters:
+                max_bins = bins
+                if parameter['isDiscrete']:
+                    max_bins = parameter['max'] + 1
+
+                #Get current slice and append to current array
+                slice = params[pointer:pointer + max_bins]
+                index = np.argmax(slice)
+                value = index / (max_bins - 1)
                 converted.append(value)
-                left = right
-                if i == len(automatable) - 1:
-                    break
-                if model[automatable[i+1]]['isDiscrete']:
-                    right += model[automatable[i+1]]['max'] + 1
-                else:
-                    right += 16
+
+                #Set pointer
+                pointer += max_bins
+
+            #Set params to be one-hot encoded
             params = converted
 
         if expand and self.parameters is not None and self.overridden is not None:
