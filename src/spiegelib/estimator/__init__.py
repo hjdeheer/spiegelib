@@ -22,3 +22,4 @@ from .mlp import MLP
 from .conv_s2s import ConvBackBone
 from .highway_layer import HighwayLayer
 from .tf_epoch_logger import TFEpochLogger
+from .param_loss import ParameterLoss

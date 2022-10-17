@@ -7,6 +7,7 @@ Barkan et al. [1]_
 import tensorflow as tf
 from tensorflow.keras import layers
 
+from spiegelib.estimator.param_loss import ParameterLoss
 from spiegelib.estimator.tf_estimator_base import TFEstimatorBase
 
 class Conv6(TFEstimatorBase):
@@ -28,15 +29,11 @@ class Conv6(TFEstimatorBase):
         self.synth = synth
         self.num_bins = num_bins
 
-
-    def parameter_loss(self):
-        pass
-
     def build_model(self):
         """
         Construct 6-layer CNN Model
         """
-
+        
         self.model = tf.keras.Sequential()
         self.model.add(layers.Conv2D(32, (3, 3), strides=(2,2), dilation_rate=(1,1),
                                      input_shape=self.input_shape,
@@ -56,6 +53,6 @@ class Conv6(TFEstimatorBase):
         self.model.add(layers.Dense(self.num_outputs))
         self.model.compile(
             optimizer=tf.optimizers.Adam(),
-            loss=TFEstimatorBase.rms_error,
+            loss=ParameterLoss(synth=self.synth, num_bins=self.num_bins),
             metrics=['accuracy']
         )
