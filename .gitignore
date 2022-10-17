@@ -13,7 +13,7 @@ data/
 .idea/
 audio/
 src/test.py
-
+jupyter/
 
 # due to using tox and pytest
 .tox
