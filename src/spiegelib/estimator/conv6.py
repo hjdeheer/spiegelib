@@ -50,7 +50,10 @@ class Conv6(TFEstimatorBase):
                                      activation='relu'))
         self.model.add(layers.Dropout(0.20))
         self.model.add(layers.Flatten())
-        self.model.add(layers.Dense(self.num_outputs, activation='sigmoid'))
+        # self.model.add(layers.Dense(self.num_outputs, activation='sigmoid'))
+        
+        # With softmax in loss function
+        self.model.add(layers.Dense(self.num_outputs))
         self.model.compile(
             optimizer=tf.optimizers.Adam(),
             loss=ParameterLoss(automatable_keys=self.automatable_keys, num_bins=self.num_bins),

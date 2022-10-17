@@ -26,8 +26,9 @@ class ParameterLoss(tf.keras.losses.Loss):
             if parameter['isDiscrete']:
                 max_bins = parameter['max'] + 1
 
-            losses.append(self.weight * self.cce(Y_true[pointer:pointer + max_bins],
-                                                 Y_pred[pointer:pointer + max_bins]) / max_bins)
+            pred_slice = Y_pred[pointer:pointer + max_bins]
+            pred_slice = tf.nn.softmax(pred_slice)
+            losses.append(self.weight * self.cce(Y_true[pointer:pointer + max_bins], pred_slice) / max_bins)
             pointer += max_bins
 
         return tf.math.reduce_mean(losses)
