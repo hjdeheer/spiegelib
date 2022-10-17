@@ -2,13 +2,14 @@ import numpy as np
 import tensorflow as tf
 import os
 
+from spiegelib.estimator import ParameterLoss
 from matplotlib import pyplot as plt
 
 import spiegelib as spgl
 
 def main():
     synth_path = "../vsts/Dexed.dll"
-    model_path = "../data/models/conv6onehot_STFT_uniform9/model.h5"
+    model_path = "../data/models/conv6_STFT_uniform_9_50K/model.h5"
 
     source_path = "../data/evaluation/audio"
     save_path  = "../data/evaluation/predict"
@@ -21,7 +22,7 @@ def main():
     network = spgl.estimator.TFEstimatorBase.load(model_path)
 
     extractor = spgl.features.STFT(output='magnitude', fft_size=512, hop_size=256, time_major=True)
-    extractor.load_scaler("D:/data_uniform/STFT/data_scaler.pkl")
+    extractor.load_scaler("D:/data_uniform50k/STFT/data_scaler.pkl")
     extractor.add_modifier(lambda data : data.reshape(data.shape[0], data.shape[1], 1), type='output')
 
     matcher = spgl.SoundMatch(synth, network, extractor)   

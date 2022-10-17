@@ -41,11 +41,13 @@ Sound matching with a genetic algorithm
     result_patch = ga_matcher.get_patch()
 
 """
+import numpy as np
 
 from spiegelib import AudioBuffer
 from spiegelib.synth.synth_base import SynthBase
 from spiegelib.features.features_base import FeaturesBase
 from spiegelib.estimator.estimator_base import EstimatorBase
+from utils import getParameterModel
 
 class SoundMatch():
     """
@@ -116,7 +118,7 @@ class SoundMatch():
         return self.patch
 
 
-    def match(self, target):
+    def match(self, target, onehot=False):
         """
         Attempt to estimate parameters for target audio
 
@@ -132,7 +134,7 @@ class SoundMatch():
                              "only match? Use match_parameter method instead")
 
         # Estimate parameters
-        params = self.match_parameters(target)
+        params = self.match_parameters(target, onehot=onehot)
 
         # Load patch into synth and return audio
         self.synth.set_patch(params)
@@ -141,7 +143,7 @@ class SoundMatch():
         return self.synth.get_audio()
 
 
-    def match_parameters(self, target, expand=False):
+    def match_parameters(self, target, expand=False, onehot=False):
         """
         Run estimation of parameters and use audio feature extraction if it
         has been set.
@@ -164,6 +166,34 @@ class SoundMatch():
 
         # Estimate parameters
         params = self.estimator.predict(input_data)
+
+        if onehot:
+            bins = 16
+            converted = []
+            model = getParameterModel()
+            automatable = self.synth.get_automatable_keys()
+            left = 0
+            if model[automatable[0]]['isDiscrete']:
+                right = model[automatable[0]]['max'] + 1
+            else:
+                right = 16
+            for i, param in enumerate(automatable):
+                slice = params[left:right]
+                index = np.argmax(slice)
+                if model[automatable[i]]['isDiscrete']:
+                    value = index / model[automatable[i]]['max']
+                else:
+                    value = index / (bins - 1)
+
+                converted.append(value)
+                left = right
+                if i == len(automatable) - 1:
+                    break
+                if model[automatable[i+1]]['isDiscrete']:
+                    right += model[automatable[i+1]]['max'] + 1
+                else:
+                    right += 16
+            params = converted
 
         if expand and self.parameters is not None and self.overridden is not None:
             param_indices = [p[0] for p in self.parameters]

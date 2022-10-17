@@ -55,6 +55,7 @@ from spiegelib.estimator.estimator_base import EstimatorBase
 from spiegelib.estimator.tf_epoch_logger import TFEpochLogger
 from spiegelib.estimator.highway_layer import HighwayLayer
 from spiegelib.estimator.conv_s2s import ConvBackBone
+from spiegelib.estimator.param_loss import ParameterLoss
 
 class TFEstimatorBase(EstimatorBase):
     """
@@ -285,7 +286,8 @@ class TFEstimatorBase(EstimatorBase):
         # Add spiegelib custom objects
         custom_objects = {'rms_error': TFEstimatorBase.rms_error,
                           'HighwayLayer': HighwayLayer,
-                          'ConvBackBone': ConvBackBone}
+                          'ConvBackBone': ConvBackBone,
+                        'ParameterLoss' : ParameterLoss}
 
         if 'custom_objects' in kwargs:
             custom_objects.update(kwargs['custom_objects'])
