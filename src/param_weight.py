@@ -168,7 +168,7 @@ if __name__ == '__main__':
 
     config_path = "../data/param_weighting/configs"
 
-    weights = generate_parameter_weights(synth, n_samples=1000)
+    weights = generate_parameter_weights(synth, n_samples=100)
 
 
     np.save("../data/presets/weights_9.npy", weights, allow_pickle=True)
