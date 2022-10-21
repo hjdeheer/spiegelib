@@ -131,11 +131,13 @@ def generate_parameter_weights(synth, n_samples=5000, values=np.arange(0, 1.1, 0
           
             mfcc_distance = calculate_mean_MFCC_error(parameter_audio)
             # Add the mean MAE score to the dictionary
-            weight_dict[parameter].append(np.mean(mfcc_distance))
+            weight_dict[parameter].append(mfcc_distance)
     
     weights = {}
+
     # Average the per sample weight scores for each parameter
-    for (key, value) in weight_dict:
+    print(weight_dict)
+    for (key, value) in weight_dict.items():
         weights[key] =  np.mean(value)
 
     return weights
@@ -150,14 +152,14 @@ def calculate_mean_MFCC_error(audio_list, error_type="mean_abs_error"):
     """
     # Do consecutive MFCC analysis on samples in parameter_audio
     mfcc_distances = []
-    for audio_1, audio_2 in zip(audio_list, audio_list[1:]):
-        mfcc_eval = MFCCEval([audio_1], [[audio_2]])
-        mfcc_eval.evaluate()
+    # for audio_1, audio_2 in zip(audio_list, audio_list[1:]):
+    mfcc_eval = MFCCEval(audio_list[:-1], [audio_list[1:]])
+    mfcc_eval.evaluate()
 
         # Extract the MAE score from the MFCC Eval class
-        mfcc_distances.append(mfcc_eval.get_scores()['target_0']['source_0'][error_type])  
+        # mfcc_distances.append(mfcc_eval.get_scores()['target_0']['source_0'][error_type])  
 
-    return np.mean(mfcc_distances)  
+    return mfcc_eval.get_stats()['source_0'][error_type]
 
 
 
@@ -167,9 +169,8 @@ if __name__ == '__main__':
 
     config_path = "../data/param_weighting/configs"
 
-    weights = generate_parameter_weights(synth)
+    weights = generate_parameter_weights(synth, n_samples=5)
 
     print(weights)
 
-    with open('weights.json', 'w', encoding='utf-8') as file:
-        json.dump(weights, file, ensure_ascii=False, indent=4)
+    np.save("weights.npy", weights, allow_pickle=True)
