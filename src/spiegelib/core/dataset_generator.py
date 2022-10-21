@@ -251,12 +251,13 @@ class DatasetGenerator():
             os.mkdir(self.patch_folder_path)
 
 
-    def patch_to_onehot(self, parameterModel, bins=16):
+    def patch_to_onehot(self, bins=16):
         """
         Converts patches with parameters ranging from 0 - 1 to one hot encoded parameters
         """
         filenames = os.listdir(self.patch_folder_path)
         #Get all keys of params that are not overridden
+        parameterModel = self.synth.parameterModel
         automatableParams = self.synth.get_automatable_keys()
         for file in filenames:
             if "onehot" in file:
@@ -277,6 +278,7 @@ class DatasetGenerator():
                     else:
                         value = round(param * maxParam)
                         onehot = tf.reshape(tf.one_hot([value], maxParam + 1), maxParam + 1).numpy()
+                    onehot[value] = 1
                     patch_onehot = np.concatenate((patch_onehot, onehot))
                 allPatches.append(patch_onehot)
             allPatches = np.array(allPatches)

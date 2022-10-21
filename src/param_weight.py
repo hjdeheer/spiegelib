@@ -115,7 +115,6 @@ def generate_parameter_weights(synth, n_samples=5000, values=np.arange(0, 1.1, 0
 
         for parameter in parameters_to_weight:
             parameter_audio = []
-
             for value in values:
                 # Remove the current parameter from the patch list
                 new_patch = [(p, v) for (p, v) in patch if p != parameter]
@@ -136,9 +135,8 @@ def generate_parameter_weights(synth, n_samples=5000, values=np.arange(0, 1.1, 0
     weights = {}
 
     # Average the per sample weight scores for each parameter
-    print(weight_dict)
     for (key, value) in weight_dict.items():
-        weights[key] =  np.mean(value)
+        weights[key] = np.mean(value)
 
     return weights
 
@@ -159,18 +157,18 @@ def calculate_mean_MFCC_error(audio_list, error_type="mean_abs_error"):
         # Extract the MAE score from the MFCC Eval class
         # mfcc_distances.append(mfcc_eval.get_scores()['target_0']['source_0'][error_type])  
 
-    return mfcc_eval.get_stats()['source_0'][error_type]
+    return mfcc_eval.get_stats()['source_0'][error_type]['mean']
 
 
 
 if __name__ == '__main__':
     vst_path = os.path.join("..", "vsts", "Dexed.dll")
     synth = SynthDawDreamer(vst_path, note_length_secs=1.0, render_length_secs=1.0)
+    synth.load_parameterModel("../data/presets/allParamsUpdated.npy")
 
     config_path = "../data/param_weighting/configs"
 
-    weights = generate_parameter_weights(synth, n_samples=5)
+    weights = generate_parameter_weights(synth, n_samples=1000)
 
-    print(weights)
 
-    np.save("weights.npy", weights, allow_pickle=True)
+    np.save("../data/presets/weights_9.npy", weights, allow_pickle=True)
