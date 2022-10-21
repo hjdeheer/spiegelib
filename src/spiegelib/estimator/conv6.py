@@ -20,12 +20,13 @@ class Conv6(TFEstimatorBase):
         :class:`spiegelib.estimator.TFEstimatorBase`
     """
 
-    def __init__(self, input_shape, num_outputs, automatable_keys, num_bins, **kwargs):
+    def __init__(self, input_shape, num_outputs, automatable_keys, num_bins, weights, **kwargs):
         """
         Constructor
         """
         self.automatable_keys = automatable_keys
         self.num_bins = num_bins
+        self.weights = weights
         super().__init__(input_shape, num_outputs, **kwargs)
 
 
@@ -53,10 +54,12 @@ class Conv6(TFEstimatorBase):
         # self.model.add(layers.Dense(self.num_outputs, activation='sigmoid'))
         
         # With softmax in loss function
-        self.model.add(layers.Dense(self.num_outputs))
+        self.model.add(layers.Dense(self.num_outputs, activation='sigmoid'))
         self.model.compile(
             optimizer=tf.optimizers.Adam(),
-            loss=ParameterLoss(automatable_keys=self.automatable_keys, num_bins=self.num_bins),
+            loss=ParameterLoss(automatable_keys=self.automatable_keys, num_bins=self.num_bins, weights=self.weights),
             #loss="categorical_crossentropy",
             metrics=['accuracy', 'mean_squared_error']
         )
+        #self.model.run_eagerly = True
+
