@@ -151,7 +151,7 @@ class SynthDawDreamer(SynthBase):
 
 
     #TODO Implement 3 strategies here! Start with basic uniform
-    def randomize_patch(self, technique, samples = None):
+    def randomize_patch(self, technique):
         """
         Randomize the current patch. Overridden parameteres will be unaffected.
         Args:
@@ -175,19 +175,14 @@ class SynthDawDreamer(SynthBase):
                     if key not in overriddenSet:
                         random_patch.append((key,  np.random.uniform(0, 1)))
             if technique == "normal":
-                assert samples is not None
+                assert self.parameterModel is not None
                 for key, value in self.patch:
                     #If no model available of this parameter:
                     if key not in overriddenSet:
-                        if not bool(samples[key]):
-                            # We want to randomize cutoff and resonance uniformly.
-                            if key == 0 or key == 1:
-                                random_patch.append((key, np.random.uniform(0, 1)))
-                        else:
-                            mean = samples[key]['mean']
-                            std = samples[key]['std']
-                            randomValue = np.random.normal(mean, std)
-                            random_patch.append((key, np.clip(randomValue, 0, 1)))
+                        mean = self.parameterModel[key]['mean']
+                        std = self.parameterModel[key]['std']
+                        randomValue = np.random.normal(mean, std)
+                        random_patch.append((key, np.clip(randomValue, 0, 1)))
             self.set_patch(random_patch)
         else:
             print("Please load plugin first.")

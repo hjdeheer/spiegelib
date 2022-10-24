@@ -85,7 +85,58 @@ def generate_default_overidden_params( ):
     # Override operators 3 through 6
     overridden_parameters.extend([(i, 0.0) for i in range(67, 155)])
     return overridden_parameters
-    
+
+def generate_experiment_overidden_params( ):
+    """
+        Generate the default overridden parameters for the Dexed synthesizer.
+        Initial config is taken from the Spiegelib guide.
+
+        :return: List[Tuple[Int, Float]] List of overridden parameters. These parameters will
+        not change when randomize_patch is called.
+    """
+
+    algorithm_number = 1
+    alg = (1.0 / 32.0) * float(algorithm_number - 1) + 0.001
+
+    overridden_parameters = [
+        (0, 1.0), # Filter Cutoff (Fully open)
+        (1, 0.0), # Filter Resonance
+        (2, 1.0), # Output Gain
+        (3, 0.5), # Master Tuning (Center is 0)
+        (4, alg), # Operator configuration
+        (5, 0.0), # Feedback
+        (6, 1.0), # Key Sync Oscillators
+        (7, 0.0), # LFO Speed
+        (8, 0.0), # LFO Delay
+        (9, 0.0), # LFO Pitch Modulation Depth
+        (10, 0.0),# LFO Amplitude Modulation Depth
+        (11, 0.0),# LFO Key Sync
+        (12, 0.0),# LFO Waveform
+        (13, 0.5),# Middle C Tuning
+    ]
+
+    # Turn off all pitch modulation parameters
+    overridden_parameters.extend([(i, 0.0) for i in range(14, 23)])
+
+    # Turn Operator 1 into a simple sine wave with no envelope
+    overridden_parameters.extend([
+        (26, 0.9), # Operator 1 Release Rate
+        (30, 0.0), # Operator 1 Release Level
+        (31, 1.0), # Operator 1 Gain
+        (44, 1.0), # Operator 1 On/Off switch
+    ])
+
+    # Override some of Operator 2 parameters
+    overridden_parameters.extend([
+        (48, 1.0), #OP 2 Release rate
+        (52, 1.0), # OP 2 Release level
+        (53, 1.0), # Operator 2 Gain (Operator 2 always outputs)
+        (66, 1.0), # Operator 1 On/Off switch
+    ])
+
+    # Override operators 3 through 6
+    overridden_parameters.extend([(i, 0.0) for i in range(67, 155)])
+    return overridden_parameters
 def generate_parameter_weights(synth, n_samples=5000, values=np.arange(0, 1.1, 0.1).round(1)):
     """
         Generate the parameter weights by calculate the MFCC error over different configurations 
@@ -97,10 +148,13 @@ def generate_parameter_weights(synth, n_samples=5000, values=np.arange(0, 1.1, 0
 
         :return: Dict[Int, Float], dictionary containing the weighting for each parameter.
     """
-    default_overrides = generate_default_overidden_params()
+    default_overrides = generate_experiment_overidden_params()
     parameters_to_weight = [parameter for parameter in range(22, 155) 
                                 if parameter not in dict(default_overrides)]
     weight_dict = {}
+
+    synth.set_overridden_parameters(default_overrides)
+    synth.save_state("../vsts/experiment.json")
 
     # Weight dictionary holds a list of size n_samples per parameter
     for parameter in parameters_to_weight:
@@ -108,7 +162,6 @@ def generate_parameter_weights(synth, n_samples=5000, values=np.arange(0, 1.1, 0
 
     for _ in trange(0, n_samples):
         # Set the default overridden parameters and randomize the patch    
-        synth.set_overridden_parameters(default_overrides)
         synth.randomize_patch(technique="uniform")
 
         patch = synth.patch
@@ -166,9 +219,9 @@ if __name__ == '__main__':
     synth = SynthDawDreamer(vst_path, note_length_secs=1.0, render_length_secs=1.0)
     synth.load_parameterModel("../data/presets/allParamsUpdated.npy")
 
-    config_path = "../data/param_weighting/configs"
-
-    weights = generate_parameter_weights(synth, n_samples=100)
-
-
-    np.save("../data/presets/weights_9.npy", weights, allow_pickle=True)
+    weights2 = np.load("../data/presets/weights_experiment.npy", allow_pickle=True)
+    print(weights2)
+    # weights = generate_parameter_weights(synth, n_samples=50)
+    #
+    #
+    # np.save("../data/presets/weights_experiment.npy", weights, allow_pickle=True)
