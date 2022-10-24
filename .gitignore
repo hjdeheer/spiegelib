@@ -19,5 +19,4 @@ jupyter/
 .tox
 .cache
 .coverage
-src/statistical_analysis.py
 
