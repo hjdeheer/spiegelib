@@ -39,7 +39,7 @@ class SynthBase(ABC):
     :vartype param_range: tuple
     """
 
-    def __init__(self, sample_rate=44100, buffer_size=512, midi_note=48,
+    def __init__(self, sample_rate=44100, buffer_size=512, midi_note=60,
                  midi_velocity=127, note_length_secs=1.0, render_length_secs=2.0,
                  overridden_params=None, clamp_params=True):
         """
