@@ -116,8 +116,6 @@ class DatasetGenerator():
             self.create_feature_folder(featureName)
 
 
-
-
     def generate(self, size, technique='uniform', file_prefix="", fit_scaler_only=None):
         """
         Generate dataset with a set of random patches. Saves the extracted features

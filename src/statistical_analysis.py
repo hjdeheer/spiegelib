@@ -1,3 +1,4 @@
+import random
 import subprocess
 import glob
 import os
@@ -34,6 +35,7 @@ def setup_scripts():
 def execute_scripts():
     dir = "C:/Users/hugod/Desktop/DX7toXFM2"
     files = [os.path.basename(x).lower() for x in glob.glob(f"{dir}/*.syx")]
+    random.shuffle(files)
     os.chdir(dir)
     for syxFile in tqdm(files):
         command = f"java -classpath .;.\json_simple-1.1.jar ReadSysEx {syxFile}"
@@ -53,7 +55,7 @@ def load_json():
 
     print(len(allPatches))
     allPatches = np.array(allPatches[:60000])
-    np.save("../data/presets/jsonPresets.npy", allPatches)
+    np.save("../data/presets/jsonPresetsNew.npy", allPatches)
     return allPatches
 
 def get_correct_param_linking():
@@ -64,31 +66,34 @@ def get_correct_param_linking():
     linkingDict = {}
     opLength = 21
     ops = 6
-    offset = 23
+    #Start at OP6
+    offset = 133
     #All OP done
     for i in range(ops):
         for j in range(opLength):
             k = (j) + (i * opLength)
             if j <= 7:
-                linkingDict[k] = Parameter(offset + k + i, 0, 99)
+                linkingDict[k] = Parameter(offset + j, 0, 99)
             elif 8 <= j <= 10:
-                linkingDict[k] = Parameter(offset + k + 5 + i, 0, 99)
+                linkingDict[k] = Parameter(offset + j + 5, 0, 99)
             elif j == 11 or j == 12:
-                linkingDict[k] = Parameter(offset + k + 5 + i, 0, 3)
+                linkingDict[k] = Parameter(offset + j + 5, 0, 3)
             elif j == 13 or j == 15:
-                linkingDict[k] = Parameter(offset + k + 5 + i, 0, 7)
+                linkingDict[k] = Parameter(offset + j + 5, 0, 7)
             elif j == 14:
-                linkingDict[k] = Parameter(offset + k + 5 + i, 0, 3)
+                linkingDict[k] = Parameter(offset + j + 5, 0, 3)
             elif j == 16:
-                linkingDict[k] = Parameter(offset + k - 8 + i, 0, 99)
+                linkingDict[k] = Parameter(offset + j - 8, 0, 99)
             elif j == 17:
-                linkingDict[k] = Parameter(offset + k - 8 + i, 0, 1)
+                linkingDict[k] = Parameter(offset + j - 8, 0, 1)
             elif j == 18:
-                linkingDict[k] = Parameter(offset + k - 8 + i, 0, 31)
+                linkingDict[k] = Parameter(offset + j - 8, 0, 31)
             elif j == 19:
-                linkingDict[k] = Parameter(offset + k - 8 + i, 0, 99)
+                linkingDict[k] = Parameter(offset + j - 8, 0, 99)
             elif j == 20:
-                linkingDict[k] = Parameter(offset + k - 8 + i, 0, 14)
+                linkingDict[k] = Parameter(offset + j - 8, 0, 14)
+        #Set offset to new OP
+        offset = offset - (opLength + 1)
     linkingDict[126] = Parameter(15, 0, 99)
     linkingDict[127] = Parameter(16, 0, 99)
     linkingDict[128] = Parameter(17, 0, 99)
@@ -115,7 +120,7 @@ def get_correct_param_linking():
 #Here we want an array with the same order of parameters in DawDreamer
 #patches[0] should be a dict with a min / max value and values
 def model_params(linking):
-    patches = np.load("../data/presets/jsonPresets.npy", allow_pickle=True)
+    patches = np.load("../data/presets/jsonPresetsNew.npy", allow_pickle=True)
     np.random.shuffle(patches)
     allParams = []
     for i in range(155):
@@ -147,7 +152,7 @@ def model_params(linking):
         paramDict['std'] = np.std(normalizedValues)
         paramDict['mean'] = np.mean(normalizedValues)
     allParams = np.array(allParams)
-    np.save("../data/presets/allParams.npy", allParams)
+    np.save("../data/presets/allParamsNew.npy", allParams)
     return allParams
 
 def extendParamModel(parameterModel, synthDescription):
@@ -175,7 +180,7 @@ def extendParamModel(parameterModel, synthDescription):
 
 def updateParameterModel(parameterModel):
     extendParamModel(parameterModel, synth.parametersDesc)
-    np.save("../data/presets/allParamsUpdated.npy", parameterModel)
+    np.save("../data/presets/allParamsUpdatedNew.npy", parameterModel)
     np.save("../data/presets/automatableKeys.npy", np.array(synth.get_automatable_keys()))
     return parameterModel
 
@@ -193,8 +198,9 @@ if __name__ == "__main__":
     #execute_scripts()
     #jsonPatches = load_json()
     #Load the patches
-    # jsonPatches = np.load("../data/presets/jsonPresets.npy", allow_pickle=True)
+    #jsonPatches = np.load("../data/presets/jsonPresets.npy", allow_pickle=True)
     linking = get_correct_param_linking()
+    #print(linking)
     allParams = model_params(linking)
     updateParameterModel(allParams)
 

@@ -9,6 +9,9 @@ and audio rendered for further processing.
 """
 
 from __future__ import print_function
+
+from random import random
+
 import numpy as np
 
 import dawdreamer as daw
@@ -28,6 +31,7 @@ class SynthDawDreamer(SynthBase):
         super().__init__(**kwargs)
 
         self.parameterModel = None
+        self.preset_counter = 0
         if plugin_path:
             self.load_plugin(plugin_path)
 
@@ -174,15 +178,32 @@ class SynthDawDreamer(SynthBase):
                     #If randomisable param
                     if key not in overriddenSet:
                         random_patch.append((key,  np.random.uniform(0, 1)))
-            if technique == "normal":
+            elif technique == "normal":
                 assert self.parameterModel is not None
                 for key, value in self.patch:
-                    #If no model available of this parameter:
                     if key not in overriddenSet:
-                        mean = self.parameterModel[key]['mean']
-                        std = self.parameterModel[key]['std']
-                        randomValue = np.random.normal(mean, std)
-                        random_patch.append((key, np.clip(randomValue, 0, 1)))
+                        if 'mean' not in self.parameterModel[key]:
+                            random_patch.append((key, 1))
+                        else:
+                            mean = self.parameterModel[key]['mean']
+                            std = self.parameterModel[key]['std']
+                            randomValue = np.random.normal(mean, std)
+                            random_patch.append((key, np.clip(randomValue, 0, 1)))
+            elif technique == "preset":
+                assert self.parameterModel is not None
+                index = self.preset_counter
+                for key, value in self.patch:
+                    if key not in overriddenSet:
+                        if 'mean' not in self.parameterModel[key]:
+                            random_patch.append((key, 1))
+                        else:
+                            index = self.preset_counter
+                            value = self.parameterModel[key]['value'][index]
+                            random_patch.append((key, np.clip(value, 0, 1)))
+                self.preset_counter += 1
+            else:
+                raise Exception(f"{technique}, Please provide a correct dataset generation technique.")
+
             self.set_patch(random_patch)
         else:
             print("Please load plugin first.")
