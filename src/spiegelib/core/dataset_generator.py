@@ -143,7 +143,7 @@ class DatasetGenerator():
             assert all(isinstance(el, bool) for el in fit_scaler_only)
 
         # Get a single example to determine required array size required
-        audio = self.synth.get_random_example(technique)
+        audio = self.synth.get_random_example(technique='uniform')
 
         #Initialize patch set
         patch = self.synth.get_patch()

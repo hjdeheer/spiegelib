@@ -227,7 +227,7 @@ def generate_parameter_weights(synth, n_samples=5000, values=np.arange(0, 1.1, 0
         :return: Dict[Int, Float], dictionary containing the weighting for each parameter.
     """
     default_overrides = generate_op2lfo_overidden_params()
-    parameters_to_weight = [parameter for parameter in range(22, 155) 
+    parameters_to_weight = [parameter for parameter in range(0, 155)
                                 if parameter not in dict(default_overrides)]
     weight_dict = {}
 
@@ -295,7 +295,7 @@ def calculate_mean_MFCC_error(audio_list, error_type="mean_abs_error"):
 if __name__ == '__main__':
     vst_path = os.path.join("..", "vsts", "Dexed.dll")
     synth = SynthDawDreamer(vst_path, note_length_secs=1.0, render_length_secs=1.0)
-    synth.load_parameterModel("../data/presets/allParamsUpdated.npy")
+    synth.load_parameterModel("../data/presets/allParamsUpdatedNew.npy")
 
     # weights2 = np.load("../data/presets/weights_experiment.npy", allow_pickle=True)
     # print(weights2)

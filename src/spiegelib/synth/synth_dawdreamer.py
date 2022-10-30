@@ -191,7 +191,6 @@ class SynthDawDreamer(SynthBase):
                             random_patch.append((key, np.clip(randomValue, 0, 1)))
             elif technique == "preset":
                 assert self.parameterModel is not None
-                index = self.preset_counter
                 for key, value in self.patch:
                     if key not in overriddenSet:
                         if 'mean' not in self.parameterModel[key]:
