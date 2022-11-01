@@ -7,13 +7,12 @@ from tqdm import tqdm
 
 from spiegelib.estimator import ParameterLoss
 from matplotlib import pyplot as plt
-import seaborn as sns
 import spiegelib as spgl
 
 def main():
 
     #Run all configurations!
-    allBins = [4, 8, 12, 16]
+    allBins = [4, 8, 12, 16, 32]
     allDatasets = ["uniform", "normal", "preset"]
 
     for bins, dataset in tqdm(list(itertools.product(allBins, allDatasets))):
@@ -25,7 +24,7 @@ def main():
         #Load Synth - standard = midi note 72 (60 C4)
         synth = spgl.synth.SynthDawDreamer(synth_path,
                                             note_length_secs=1.0,
-                                            render_length_secs=1.0)
+                                            render_length_secs=1.0, midi_note=48)
 
         #Choose correct state (fixed)
         synth.load_state("../vsts/NewExperiment.json")
@@ -34,8 +33,6 @@ def main():
 
         predicted_patches = []
 
-
-        synth.parameterModel[7]['value'] = synth.parameterModel[7]['value'][:100]
         #Load network and data
         network = spgl.estimator.TFEstimatorBase.load(model_path)
         extractor = spgl.features.STFT(output='magnitude', fft_size=512, hop_size=256, time_major=True)
