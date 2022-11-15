@@ -41,6 +41,7 @@ Sound matching with a genetic algorithm
     result_patch = ga_matcher.get_patch()
 
 """
+import numpy as np
 
 from spiegelib import AudioBuffer
 from spiegelib.synth.synth_base import SynthBase
@@ -116,7 +117,7 @@ class SoundMatch():
         return self.patch
 
 
-    def match(self, target):
+    def match(self, target, onehot=None):
         """
         Attempt to estimate parameters for target audio
 
@@ -132,16 +133,16 @@ class SoundMatch():
                              "only match? Use match_parameter method instead")
 
         # Estimate parameters
-        params = self.match_parameters(target)
+        params = self.match_parameters(target, onehot=onehot)
 
         # Load patch into synth and return audio
         self.synth.set_patch(params)
         self.synth.render_patch()
         self.patch = self.synth.get_patch(skip_overridden=True)
-        return self.synth.get_audio()
+        return self.synth.get_audio(), params
 
 
-    def match_parameters(self, target, expand=False):
+    def match_parameters(self, target, expand=False, onehot=None):
         """
         Run estimation of parameters and use audio feature extraction if it
         has been set.
@@ -164,6 +165,30 @@ class SoundMatch():
 
         # Estimate parameters
         params = self.estimator.predict(input_data)
+
+        #If we do a one-hot encoding:
+        if onehot is not None:
+            bins = onehot
+            converted = []
+            parameters = self.synth.parameterModel[self.synth.get_automatable_keys()]
+            pointer = 0
+
+            for parameter in parameters:
+                max_bins = bins
+                if parameter['isDiscrete']:
+                    max_bins = parameter['max'] + 1
+
+                #Get current slice and append to current array
+                slice = params[pointer:pointer + max_bins]
+                index = np.argmax(slice)
+                value = index / (max_bins - 1)
+                converted.append(value)
+
+                #Set pointer
+                pointer += max_bins
+
+            #Set params to be one-hot encoded
+            params = converted
 
         if expand and self.parameters is not None and self.overridden is not None:
             param_indices = [p[0] for p in self.parameters]

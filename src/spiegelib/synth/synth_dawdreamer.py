@@ -9,6 +9,9 @@ and audio rendered for further processing.
 """
 
 from __future__ import print_function
+
+from random import random
+
 import numpy as np
 
 import dawdreamer as daw
@@ -27,6 +30,8 @@ class SynthDawDreamer(SynthBase):
     def __init__(self, plugin_path=None, **kwargs):
         super().__init__(**kwargs)
 
+        self.parameterModel = None
+        self.preset_counter = 0
         if plugin_path:
             self.load_plugin(plugin_path)
 
@@ -136,12 +141,21 @@ class SynthDawDreamer(SynthBase):
             raise Exception('Patch must be rendered before audio can be retrieved')
 
 
+
+    def load_parameterModel(self, path):
+        """
+        Loads parameter model as field of object
+        Args:
+            path: path to parameter model
+        """
+        self.parameterModel = np.load(path, allow_pickle=True)
+
     def write_to_wav(self, audio, path):
         wav.write(path, self.sample_rate, audio.transpose())
 
 
     #TODO Implement 3 strategies here! Start with basic uniform
-    def randomize_patch(self, technique, samples = None):
+    def randomize_patch(self, technique):
         """
         Randomize the current patch. Overridden parameteres will be unaffected.
         Args:
@@ -150,31 +164,45 @@ class SynthDawDreamer(SynthBase):
         """
         if self.loaded_plugin:
             #Dictionary of i : j, where parameter i must have constant value j
-            #Keep tune, transpose, global volume and switches at constant
-            constantParams = {2: 1, 3: 0.5, 13: 0.5, 44: 1, 66: 1, 88: 1, 110: 1, 132: 1, 154: 1}
+            #Keep tune, transpose, algorithm, global volume and switches at constant
+            constantParams = {2: 1, 3: 0.5, 4: 1, 13: 0.5, 44: 1, 66: 1, 88: 1, 110: 1, 132: 1, 154: 1}
+            #For evaluation technique, set all volume params to 1
+            volumeParams = {0: 1, 31: 1, 53: 1, 75: 1, 97: 1, 119: 1, 141: 1}
             random_patch = []
+            overriddenSet = set()
+            for (param, value) in self.overridden_params:
+                overriddenSet.add(param)
             #First type
             if technique == "uniform":
                 for key, value in self.patch:
-                    if key in constantParams:
-                        random_patch.append((key, constantParams[key]))
-                    elif self.parametersDesc[key]["isAutomatable"] and not self.parametersDesc[key]["isDiscrete"]:
-                        random_patch.append((key, np.random.uniform(0, 1)))
-            if technique == "normal":
-                assert samples is not None
+                    #If randomisable param
+                    if key not in overriddenSet:
+                        random_patch.append((key,  np.random.uniform(0, 1)))
+            elif technique == "normal":
+                assert self.parameterModel is not None
                 for key, value in self.patch:
-                    if key in constantParams:
-                        random_patch.append((key, constantParams[key]))
-                    #If no model available of this parameter:
-                    elif not bool(samples[key]):
-                        # We want to randomize cutoff and resonance uniformly.
-                        if key == 0 or key == 1:
-                            random_patch.append((key, np.random.uniform(0, 1)))
-                    else:
-                        mean = samples[key]['mean']
-                        std = samples[key]['std']
-                        randomValue = np.random.normal(mean, std)
-                        random_patch.append((key, np.clip(randomValue, 0, 1)))
+                    if key not in overriddenSet:
+                        if 'mean' not in self.parameterModel[key]:
+                            random_patch.append((key, 1))
+                        else:
+                            mean = self.parameterModel[key]['mean']
+                            std = self.parameterModel[key]['std']
+                            randomValue = np.random.normal(mean, std)
+                            random_patch.append((key, np.clip(randomValue, 0, 1)))
+            elif technique == "preset":
+                assert self.parameterModel is not None
+                for key, value in self.patch:
+                    if key not in overriddenSet:
+                        if 'mean' not in self.parameterModel[key]:
+                            random_patch.append((key, 1))
+                        else:
+                            index = self.preset_counter
+                            value = self.parameterModel[key]['value'][index]
+                            random_patch.append((key, np.clip(value, 0, 1)))
+                self.preset_counter += 1
+            else:
+                raise Exception(f"{technique}, Please provide a correct dataset generation technique.")
+
             self.set_patch(random_patch)
         else:
             print("Please load plugin first.")
@@ -189,6 +217,20 @@ class SynthDawDreamer(SynthBase):
             self.patch[i] = (i, self.generator.get_parameter(i))
 
 
+    def get_automatable_keys(self):
+        """
+        Gets all parameter keys that are automatable and not overridden.
+        Returns:
+        A set with parameter keys.
+        """
+        overriddenSet = set()
+        automatableSet = []
+        for (param, value) in self.overridden_params:
+            overriddenSet.add(param)
+        for key, value in self.patch:
+            if key not in overriddenSet:
+                automatableSet.append(key)
+        return automatableSet
 
 ################################################################################
 

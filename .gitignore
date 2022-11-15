@@ -9,11 +9,14 @@ __pycache__/
 *~
 data/
 !tests/data
-src/test.py
+.idea/spiegelib.iml
+.idea/
 audio/
+src/test.py
+jupyter/
 
 # due to using tox and pytest
 .tox
 .cache
 .coverage
-src/statistical_analysis.py
+

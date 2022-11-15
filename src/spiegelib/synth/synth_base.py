@@ -39,7 +39,7 @@ class SynthBase(ABC):
     :vartype param_range: tuple
     """
 
-    def __init__(self, sample_rate=44100, buffer_size=512, midi_note=48,
+    def __init__(self, sample_rate=44100, buffer_size=512, midi_note=72,
                  midi_velocity=127, note_length_secs=1.0, render_length_secs=2.0,
                  overridden_params=None, clamp_params=True):
         """
@@ -144,7 +144,7 @@ class SynthBase(ABC):
 
 
     @abstractmethod
-    def randomize_patch(self, technique, samples=None):
+    def randomize_patch(self, technique):
         """
         This method must be overridden and should have the effect
         of randomizing parameters of the synthesizer. Overridden methods should be
@@ -152,28 +152,22 @@ class SynthBase(ABC):
         Args:
             technique: Defines the sampling technique used for data generation
                 of the parameter space.
-            samples:
         """
 
 
 
     #TODO Add random sampling arguments here to the synth
-    def get_random_example(self, technique, samples=None):
+    def get_random_example(self, technique):
         """
         Returns audio from a new random patch
         Args:
             technique (str): Defines the sampling technique used for data generation
                 of the parameter space.
-            samples (nparray, optional): an array of dictionaries where dict `i` represents parameter `i` values,
-             min max ranges to build a normal distribution
         :return: An audio buffer
         :rtype: np.array
         """
-        if samples is not None:
-            assert technique == 'normal'
-            self.randomize_patch(technique, samples)
-        else:
-            self.randomize_patch(technique)
+
+        self.randomize_patch(technique)
         self.render_patch()
         return self.get_audio()
 
